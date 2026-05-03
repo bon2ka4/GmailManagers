@@ -78,22 +78,19 @@ window.addEventListener('DOMContentLoaded', () => {
             if (decryptedUrl) {
                 API_URL = decryptedUrl;
                 MASTER_KEY = rememberedKey;
-                elements.mainApp.classList.remove('hidden');
-                setTimeout(() => {
-                    elements.mainApp.classList.remove('blur-xl', 'opacity-0');
-                }, 50);
+                // Ẩn màn hình login ngay lập tức (không dùng hidden để tránh lỗi kẹt)
+                elements.loginScreen.style.display = 'none';
+                elements.mainApp.classList.remove('blur-xl', 'opacity-0');
                 loadData();
                 return;
             }
         } catch (e) { 
             console.error("Auto login failed", e);
-            // Xóa rác nếu lỗi để lần sau không bị kẹt
-            localStorage.removeItem('gmail_tool_remembered_key');
         }
     }
     
-    // Luôn hiện màn hình Login nếu không vào được Dashboard
-    elements.loginScreen.classList.remove('hidden');
+    // Nếu không auto-login được, màn hình Login đã có sẵn ở đó rồi
+    elements.loginScreen.classList.remove('opacity-0', 'pointer-events-none');
 });
 
 // --- AUTH UTILS ---
@@ -158,11 +155,10 @@ elements.loginForm.addEventListener('submit', async (e) => {
             }
             
             elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
-            elements.mainApp.classList.remove('hidden');
             setTimeout(() => {
-                elements.mainApp.classList.remove('blur-xl', 'opacity-0');
-                elements.loginScreen.classList.add('hidden');
+                elements.loginScreen.style.display = 'none';
             }, 500);
+            elements.mainApp.classList.remove('blur-xl', 'opacity-0');
             loadData();
         } catch (err) {
             alert("Gmail hoặc Mật khẩu không đúng!");

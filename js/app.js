@@ -250,34 +250,34 @@ function render() {
                 <td class="px-6 py-4 text-xs text-slate-400">
                     <div class="flex items-center gap-2 group/item">
                         <span>${acc.phone || 'N/A'}</span>
-                        ${acc.phone ? \`<button onclick="event.stopPropagation(); window.copyText('\${acc.phone}', 'SĐT')" class="opacity-0 group-hover/item:opacity-100 text-slate-500 hover:text-emerald-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>\` : ''}
+                        ${acc.phone ? `<button onclick="event.stopPropagation(); window.copyText('${acc.phone}', 'SĐT')" class="opacity-0 group-hover/item:opacity-100 text-slate-500 hover:text-emerald-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>` : ''}
                     </div>
                     <div class="flex items-center gap-2 text-[10px] opacity-50 group/item">
                         <span>${acc.recovery_email || ''}</span>
-                        ${acc.recovery_email ? \`<button onclick="event.stopPropagation(); window.copyText('\${acc.recovery_email}', 'Mail khôi phục')" class="opacity-0 group-hover/item:opacity-100 text-slate-500 hover:text-emerald-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>\` : ''}
+                        ${acc.recovery_email ? `<button onclick="event.stopPropagation(); window.copyText('${acc.recovery_email}', 'Mail khôi phục')" class="opacity-0 group-hover/item:opacity-100 text-slate-500 hover:text-emerald-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>` : ''}
                     </div>
                 </td>
                 <td class="px-6 py-4">
                     <span class="text-xs font-bold text-slate-300">${acc.storage_value || 15} ${acc.storage_unit || 'GB'}</span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <span class="px-2 py-1 rounded-lg text-[10px] font-black \${acc.burial_date ? 'bg-slate-500/10 text-slate-400' : 'bg-blue-500/10 text-blue-400'}">
-                        \${acc.burial_date || 'VĨNH VIỄN'}
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${acc.burial_date ? 'bg-slate-500/10 text-slate-400' : 'bg-blue-500/10 text-blue-400'}">
+                        ${acc.burial_date || 'VĨNH VIỄN'}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <span class="px-2 py-1 rounded-lg text-[10px] font-black \${checkExpiring(acc.expiry_date) ? 'bg-amber-500/10 text-amber-500' : (acc.expiry_date ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-400')}">
-                        \${acc.expiry_date || 'VĨNH VIỄN'}
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${checkExpiring(acc.expiry_date) ? 'bg-amber-500/10 text-amber-500' : (acc.expiry_date ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-400')}">
+                        ${acc.expiry_date || 'VĨNH VIỄN'}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-center">
                     <div class="flex items-center justify-center gap-2" onclick="event.stopPropagation()">
-                        <button onclick="window.editAccount('\${acc.id}')" class="p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                        <button onclick="window.deleteAccount('\${acc.id}')" class="p-2 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="window.editAccount('${acc.id}')" class="p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="window.deleteAccount('${acc.id}')" class="p-2 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </td>
             </tr>
-        \`).join('');
+        `).join('');
         if (window.lucide) lucide.createIcons();
     }
 }
@@ -291,19 +291,19 @@ function checkExpiring(date) {
 // --- ADMIN PANEL ---
 elements.btnAdminPanel.addEventListener('click', async () => {
     elements.adminModal.classList.add('active-modal');
-    elements.adminUserList.innerHTML = \`<tr><td colspan="4" class="p-10 text-center animate-pulse">Đang tải...</td></tr>\`;
+    elements.adminUserList.innerHTML = `<tr><td colspan="4" class="p-10 text-center animate-pulse">Đang tải...</td></tr>`;
     try {
         const users = await callCloud({ action: 'admin_get_users', admin_email: CURRENT_USER });
-        elements.adminUserList.innerHTML = users.map(u => \`
+        elements.adminUserList.innerHTML = users.map(u => `
             <tr class="border-b border-white/5 admin-row transition-all">
-                <td class="px-6 py-4 font-medium">\${u.email} \${u.email === CURRENT_USER ? '<span class="text-[10px] bg-amber-500 text-black px-1 rounded ml-1">ADMIN</span>' : ''}</td>
-                <td class="px-6 py-4 text-xs text-slate-500">\${new Date(u.joinDate).toLocaleDateString('vi-VN')}</td>
-                <td class="px-6 py-4 text-center"><span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">\${u.status}</span></td>
+                <td class="px-6 py-4 font-medium">${u.email} ${u.email === CURRENT_USER ? '<span class="text-[10px] bg-amber-500 text-black px-1 rounded ml-1">ADMIN</span>' : ''}</td>
+                <td class="px-6 py-4 text-xs text-slate-500">${new Date(u.joinDate).toLocaleDateString('vi-VN')}</td>
+                <td class="px-6 py-4 text-center"><span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">${u.status}</span></td>
                 <td class="px-6 py-4 text-center">
-                    \${u.email !== CURRENT_USER ? \`<button onclick="window.adminDeleteUser('\${u.email}')" class="p-2 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all"><i data-lucide="user-minus" class="w-5 h-5"></i></button>\` : '-'}
+                    ${u.email !== CURRENT_USER ? `<button onclick="window.adminDeleteUser('${u.email}')" class="p-2 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all"><i data-lucide="user-minus" class="w-5 h-5"></i></button>` : '-'}
                 </td>
             </tr>
-        \`).join('');
+        `).join('');
         if (window.lucide) lucide.createIcons();
     } catch (e) { alert("Lỗi Admin!"); }
 });
@@ -322,11 +322,11 @@ elements.btnCloseAdmin.addEventListener('click', () => elements.adminModal.class
 
 // --- APP ACTIONS ---
 window.togglePassword = (id, pass, btn) => {
-    const span = document.getElementById(\`pass-\${id}\`);
+    const span = document.getElementById(`pass-${id}`);
     const isHidden = span.innerText === '••••••••';
     span.innerText = isHidden ? pass : '••••••••';
     span.classList.toggle('text-blue-400', isHidden);
-    btn.innerHTML = \`<i data-lucide="\${isHidden ? 'eye' : 'eye-off'}" class="w-3 h-3"></i>\`;
+    btn.innerHTML = `<i data-lucide="${isHidden ? 'eye' : 'eye-off'}" class="w-3 h-3"></i>`;
     if (window.lucide) lucide.createIcons();
 };
 
@@ -334,7 +334,7 @@ window.copyText = (text, label) => {
     navigator.clipboard.writeText(text).then(() => {
         const toast = document.createElement('div');
         toast.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-2xl text-xs font-bold shadow-2xl z-[500] fade-in flex items-center gap-2 border border-white/20';
-        toast.innerHTML = \`<i data-lucide="check-circle" class="w-4 h-4"></i> ĐÃ CHÉP \${label.toUpperCase()}!\`;
+        toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> ĐÃ CHÉP ${label.toUpperCase()}!`;
         document.body.appendChild(toast);
         if (window.lucide) lucide.createIcons();
         setTimeout(() => toast.remove(), 2000);
@@ -366,7 +366,7 @@ elements.form.addEventListener('submit', async (e) => {
     if (btnSubmit) {
         const originalContent = btnSubmit.innerHTML;
         btnSubmit.disabled = true;
-        btnSubmit.innerHTML = \`<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> <span>ĐANG LƯU...</span>\`;
+        btnSubmit.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> <span>ĐANG LƯU...</span>`;
         if (window.lucide) lucide.createIcons();
         try {
             const data = Object.fromEntries(new FormData(elements.form).entries());
@@ -392,10 +392,10 @@ elements.form.addEventListener('submit', async (e) => {
 window.deleteAccount = async (id) => {
     const acc = accounts.find(a => a.id === id);
     if (!acc) return;
-    if (confirm(\`Xóa Gmail: \${acc.account}?\`)) {
+    if (confirm(`Xóa Gmail: ${acc.account}?`)) {
         elements.btnDelete.disabled = true;
         const orig = elements.btnDelete.innerHTML;
-        elements.btnDelete.innerHTML = \`<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>\`;
+        elements.btnDelete.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>`;
         if (window.lucide) lucide.createIcons();
         try {
             accounts = accounts.filter(a => a.id !== id);

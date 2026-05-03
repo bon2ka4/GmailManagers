@@ -329,17 +329,18 @@ function checkExpiring(dateStr) {
 
 window.togglePassword = (id, realPass, btn) => {
     const span = document.getElementById(`pass-${id}`);
-    const icon = btn.querySelector('i');
-    if (span.innerText === '••••••••') {
+    const isHidden = span.innerText === '••••••••';
+    
+    if (isHidden) {
         span.innerText = realPass;
         span.classList.remove('text-slate-400');
         span.classList.add('text-blue-400');
-        icon.setAttribute('data-lucide', 'eye'); // Hiện pass thì hiện mắt thường
+        btn.innerHTML = `<i data-lucide="eye" class="w-3.5 h-3.5"></i>`; // Hiện pass -> hiện mắt thường
     } else {
         span.innerText = '••••••••';
         span.classList.remove('text-blue-400');
         span.classList.add('text-slate-400');
-        icon.setAttribute('data-lucide', 'eye-off'); // Ẩn pass thì hiện mắt gạch chéo
+        btn.innerHTML = `<i data-lucide="eye-off" class="w-3.5 h-3.5"></i>`; // Ẩn pass -> hiện mắt gạch chéo
     }
     lucide.createIcons();
 };

@@ -267,10 +267,15 @@ function render() {
                     <div class="text-[10px] opacity-50">${acc.recovery_email || ''}</div>
                 </td>
                 <td class="px-6 py-4">
-                    <span class="text-xs font-bold text-slate-300">${acc.storage_total || 15} GB</span>
+                    <span class="text-xs font-bold text-slate-300">${acc.storage_value || 15} ${acc.storage_unit || 'GB'}</span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${checkExpiring(acc.expiry_date) ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-500/10 text-emerald-500'}">
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${acc.burial_date ? 'bg-slate-500/10 text-slate-400' : 'bg-blue-500/10 text-blue-400'}">
+                        ${acc.burial_date || 'VĨNH VIỄN'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${checkExpiring(acc.expiry_date) ? 'bg-amber-500/10 text-amber-500' : (acc.expiry_date ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-400')}">
                         ${acc.expiry_date || 'VĨNH VIỄN'}
                     </span>
                 </td>
@@ -340,7 +345,7 @@ window.togglePassword = (id, pass, btn) => {
 window.editAccount = (id) => {
     const acc = accounts.find(a => a.id === id);
     editingId = id;
-    elements.modalTitle.innerText = "CHỈNH SỬA TÀI KHOẢN";
+    elements.modalTitle.innerText = "CHỈNH SỬA GMAIL";
     elements.btnDelete.classList.remove('hidden');
     for (let key in acc) { if (elements.form[key]) elements.form[key].value = acc[key]; }
     elements.modal.classList.add('active-modal');
@@ -357,7 +362,7 @@ window.deleteAccount = async (id) => {
 elements.btnAdd.addEventListener('click', () => {
     editingId = null;
     elements.form.reset();
-    elements.modalTitle.innerText = "THÊM TÀI KHOẢN MỚI";
+    elements.modalTitle.innerText = "THÊM GMAIL MỚI";
     elements.btnDelete.classList.add('hidden');
     elements.modal.classList.add('active-modal');
 });

@@ -292,6 +292,14 @@ function render() {
                     </div>
                 </td>
                 <td class="px-6 py-4">
+                    ${acc.gmail_authen ? `
+                    <div class="flex items-center gap-2 text-xs text-amber-500/80 group/authen">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        <span class="font-medium">${acc.gmail_authen}</span>
+                        <button onclick="event.stopPropagation(); window.copyText('${acc.gmail_authen}', 'Authen')" class="opacity-0 group-hover/authen:opacity-100 text-slate-500 hover:text-amber-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                    </div>` : '<span class="text-slate-700 text-[10px]">-</span>'}
+                </td>
+                <td class="px-6 py-4">
                     <span class="text-xs font-bold text-slate-300">${acc.storage_value || 15} ${acc.storage_unit || 'GB'}</span>
                 </td>
                 <td class="px-6 py-4 text-right">

@@ -157,8 +157,9 @@
                     <thead class="bg-white/5 text-slate-400 uppercase text-xs font-bold tracking-wider">
                         <tr>
                             <th class="px-6 py-5">Gmail & Mật khẩu</th>
-                            <th class="px-6 py-5">SĐT / Phục hồi</th>
-                            <th class="px-6 py-5">Dung lượng</th>
+                            <th class="px-6 py-4">SĐT / PHỤC HỒI</th>
+                            <th class="px-6 py-4">AUTHEN</th>
+                            <th class="px-6 py-4">DUNG LƯỢNG</th>
                             <th class="px-6 py-5 text-right">Chôn cất</th>
                             <th class="px-6 py-5 text-right">Hết hạn</th>
                             <th class="px-6 py-5 text-center">Hành động</th>
@@ -219,10 +220,14 @@
                     <label class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] ml-1">Số điện thoại</label>
                     <input type="text" name="phone" placeholder="09xxxxxxx" class="w-full bg-slate-900/50 border border-white/5 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-blue-600 focus:bg-slate-900 transition-all text-sm">
                 </div>
-                <div class="space-y-2">
-                    <label class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] ml-1">Mail khôi phục</label>
-                    <input type="text" name="recovery_email" placeholder="backup@gmail.com" class="w-full bg-slate-900/50 border border-white/5 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-blue-600 focus:bg-slate-900 transition-all text-sm">
-                </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Mail khôi phục</label>
+                        <input type="email" name="recovery_email" placeholder="Địa chỉ mail khôi phục..." class="w-full bg-slate-900/50 border border-white/5 rounded-2xl p-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Gmail Authen</label>
+                        <input type="text" name="gmail_authen" placeholder="Mã hoặc mail Authen..." class="w-full bg-slate-900/50 border border-white/5 rounded-2xl p-4 text-white text-sm focus:outline-none focus:border-blue-500 transition-all">
+                    </div>
                 
                 <div class="space-y-2">
                     <label class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] ml-1">Dung lượng</label>

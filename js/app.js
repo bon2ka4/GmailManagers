@@ -217,11 +217,13 @@ async function loadData() {
         const res = await callCloud({ action: 'login', email: CURRENT_USER, otp: storedOtp });
         
         if (res.status === "Success") {
-            accounts = res.data ? JSON.parse(res.data) : [];
-            localStorage.setItem('gmail_tool_last_data_' + CURRENT_USER, JSON.stringify(accounts));
-            render();
+            // Chống lỗi nếu res.data bị null hoặc undefined
+            const rawData = res.data || "[]";
+            accounts = JSON.parse(rawData);
             
-            // Sync xong thì mới vào main app
+            localStorage.setItem('gmail_tool_last_data_' + CURRENT_USER, JSON.stringify(accounts));
+            render(); // Ép vẽ lại Dashboard
+            
             elements.syncScreen.classList.add('hidden');
             elements.mainApp.classList.remove('hidden');
         } else {

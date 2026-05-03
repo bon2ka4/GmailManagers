@@ -225,8 +225,11 @@ async function loadData() {
             elements.syncScreen.classList.add('hidden');
             elements.mainApp.classList.remove('hidden');
         } else {
-            alert("Phiên làm việc hết hạn. Vui lòng đăng nhập lại!");
-            elements.btnLogout.click();
+            // Không tự ý logout nữa, cứ để người dùng ở lại Dashboard
+            // Chỉ khi nào họ F5 mà mất session thì mới phải login lại
+            console.warn("Sync failed, but keeping session.");
+            elements.syncScreen.classList.add('hidden');
+            elements.mainApp.classList.remove('hidden');
         }
     } catch (e) { 
         alert("Lỗi đồng bộ dữ liệu. Đại Ca kiểm tra lại mạng nhé!");

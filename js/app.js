@@ -53,20 +53,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (!API_URL) {
         elements.setupModal.classList.remove('hidden');
     } else {
-        const rememberedUser = localStorage.getItem('gmail_tool_user');
-        const isRemembered = localStorage.getItem('gmail_tool_remember') === 'true';
+        // Dùng sessionStorage để tự xóa khi đóng trình duyệt
+        const sessionUser = sessionStorage.getItem('gmail_tool_user');
+        const isSessionActive = sessionStorage.getItem('gmail_tool_session_active') === 'true';
         
-        if (rememberedUser && isRemembered) {
-            CURRENT_USER = rememberedUser;
-            // Ta cần lấy lại quyền Admin và Data mới nhất
-            try {
-                const res = await callCloud({ action: 'login', email: CURRENT_USER, otp: 'SESSION' }); // Backend cần hỗ trợ bỏ qua OTP nếu đúng Gmail chủ? 
-                // Thực tế để đơn giản nhất, ta cứ cho vào thẳng dashboard với data cũ, rồi sync sau.
-                IS_ADMIN = localStorage.getItem('gmail_tool_is_admin') === 'true';
-                accounts = JSON.parse(localStorage.getItem('gmail_tool_last_data') || "[]");
-                enterApp();
-                loadData(); // Tự động sync data mới nhất
-            } catch (e) { console.log("Session expired"); }
+        if (sessionUser && isSessionActive) {
+            CURRENT_USER = sessionUser;
+            IS_ADMIN = sessionStorage.getItem('gmail_tool_is_admin') === 'true';
+            
+            // Lấy data từ cache local trước cho nhanh
+            const cachedData = localStorage.getItem('gmail_tool_last_data_' + CURRENT_USER);
+            accounts = cachedData ? JSON.parse(cachedData) : [];
+            
+            enterApp();
+            loadData(); // Sync ngầm bản mới nhất từ Cloud
         }
     }
 });
@@ -154,10 +154,11 @@ async function handleVerifyLogin(email, otp) {
             IS_ADMIN = res.isAdmin;
             
             if (elements.rememberMe.checked) {
-                localStorage.setItem('gmail_tool_user', email);
-                localStorage.setItem('gmail_tool_remember', 'true');
-                localStorage.setItem('gmail_tool_is_admin', IS_ADMIN);
-                localStorage.setItem('gmail_tool_last_data', res.data || "[]");
+                sessionStorage.setItem('gmail_tool_user', email);
+                sessionStorage.setItem('gmail_tool_session_active', 'true');
+                sessionStorage.setItem('gmail_tool_is_admin', IS_ADMIN);
+                // Lưu cache data vào localStorage (để load nhanh khi F5)
+                localStorage.setItem('gmail_tool_last_data_' + email, res.data || "[]");
             }
             
             accounts = res.data ? JSON.parse(res.data) : [];
@@ -209,9 +210,8 @@ async function loadData() {
 async function saveData() {
     try {
         await callCloud({ action: 'save', email: CURRENT_USER, data: JSON.stringify(accounts) });
-        if (localStorage.getItem('gmail_tool_remember') === 'true') {
-            localStorage.setItem('gmail_tool_last_data', JSON.stringify(accounts));
-        }
+        // Luôn cache lại bản mới nhất để F5 phát có luôn
+        localStorage.setItem('gmail_tool_last_data_' + CURRENT_USER, JSON.stringify(accounts));
     } catch (e) { alert("Lỗi lưu Cloud!"); }
 }
 

@@ -22,7 +22,6 @@ const elements = {
     statTotal: document.getElementById('stat-total'),
     statExpiring: document.getElementById('stat-expiring'),
     statValid: document.getElementById('stat-valid'),
-    searchInput: document.getElementById('search-input'),
     accountList: document.getElementById('account-list'),
     emptyState: document.getElementById('empty-state'),
     btnAdd: document.getElementById('btn-add'),
@@ -255,7 +254,6 @@ async function saveData() {
 }
 
 function render() {
-    const term = elements.searchInput.value.toLowerCase();
     let displayList = [...accounts];
 
     // 1. LOGIC SẮP XẾP (SORTING)
@@ -263,22 +261,19 @@ function render() {
         displayList.sort((a, b) => {
             let valA, valB;
             if (sortField === 'storage') {
-                // Quy đổi về GB để so sánh
                 valA = (parseFloat(a.storage_value) || 0) * (a.storage_unit === 'TB' ? 1024 : 1);
                 valB = (parseFloat(b.storage_value) || 0) * (b.storage_unit === 'TB' ? 1024 : 1);
             } else {
-                // Đối với ngày tháng, nếu trống thì đẩy xuống cuối tùy theo chiều
                 valA = a[sortField] || (sortDir === 'asc' ? '9999-99-99' : '0000-00-00');
                 valB = b[sortField] || (sortDir === 'asc' ? '9999-99-99' : '0000-00-00');
             }
-
             if (valA < valB) return sortDir === 'asc' ? -1 : 1;
             if (valA > valB) return sortDir === 'asc' ? 1 : -1;
             return 0;
         });
     }
 
-    const filtered = displayList.filter(a => a.account.toLowerCase().includes(term) || a.password.toLowerCase().includes(term));
+    const filtered = displayList; // Không còn filter
     
     // Cập nhật thống kê dựa trên dữ liệu gốc (không bị ảnh hưởng bởi sort/filter)
     elements.statTotal.innerText = accounts.length;
@@ -530,7 +525,6 @@ window.deleteAccount = async (id) => {
     }
 };
 
-elements.searchInput.addEventListener('input', render);
 elements.btnLogout.addEventListener('click', () => {
     sessionStorage.clear();
     localStorage.removeItem('gmail_tool_user');
@@ -554,6 +548,7 @@ elements.btnResetSetup.addEventListener('click', () => {
         location.reload();
     }
 });
+
 window.toggleSort = (field) => {
     if (sortField === field) {
         sortDir = sortDir === 'asc' ? 'desc' : 'asc';
@@ -563,8 +558,3 @@ window.toggleSort = (field) => {
     }
     render();
 };
-
-// Khởi tạo các sự kiện
-document.addEventListener('DOMContentLoaded', () => {
-    // ... logic khởi tạo cũ giữ nguyên
-});

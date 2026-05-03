@@ -377,12 +377,7 @@ window.editAccount = (id) => {
 };
 
 window.deleteAccount = async (id) => {
-    if (confirm("Xóa tài khoản này nhé Đại Ca?")) {
-        accounts = accounts.filter(a => a.id !== id);
-        await saveData();
-        render();
-    }
-};
+
 
 elements.btnAdd.addEventListener('click', () => {
     editingId = null;
@@ -395,6 +390,13 @@ elements.btnAdd.addEventListener('click', () => {
 elements.btnCancel.addEventListener('click', () => elements.modal.classList.remove('active-modal'));
 elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btnSubmit = elements.form.querySelector('button[type="submit"]');
+    const originalContent = btnSubmit.innerHTML;
+    
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> ĐANG LƯU...`;
+    lucide.createIcons();
+
     const data = Object.fromEntries(new FormData(elements.form).entries());
     if (editingId) {
         const idx = accounts.findIndex(a => a.id === editingId);
@@ -403,10 +405,48 @@ elements.form.addEventListener('submit', async (e) => {
         data.id = Date.now().toString();
         accounts.push(data);
     }
-    await saveData();
-    elements.modal.classList.remove('active-modal');
-    render();
+
+    try {
+        await saveData();
+        elements.modal.classList.remove('active-modal');
+        render();
+    } catch (err) {
+        alert("Lỗi khi lưu dữ liệu!");
+    } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = originalContent;
+        lucide.createIcons();
+    }
 });
+
+window.deleteAccount = async (id) => {
+    // Nếu gọi từ bảng (render), ta mở modal edit trước rồi mới xóa
+    // Hoặc nếu đang trong modal, ta xử lý trực tiếp
+    const acc = accounts.find(a => a.id === id);
+    if (!acc) return;
+
+    if (confirm(`Đại Ca có chắc muốn XÓA Gmail: ${acc.account}?`)) {
+        const btnDelete = elements.btnDelete;
+        const originalContent = btnDelete.innerHTML;
+
+        btnDelete.disabled = true;
+        btnDelete.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin text-white"></i>`;
+        lucide.createIcons();
+
+        try {
+            accounts = accounts.filter(a => a.id !== id);
+            await saveData();
+            elements.modal.classList.remove('active-modal');
+            render();
+        } catch (err) {
+            alert("Lỗi khi xóa!");
+        } finally {
+            btnDelete.disabled = false;
+            btnDelete.innerHTML = originalContent;
+            lucide.createIcons();
+        }
+    }
+};
 
 elements.searchInput.addEventListener('input', render);
 

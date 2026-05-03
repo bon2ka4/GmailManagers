@@ -110,10 +110,12 @@ async function handleRegister(email) {
     try {
         const res = await callCloud({ action: 'register', email });
         if (res === "Success") {
-            alert("Đăng ký thành công! Giờ Đại Ca hãy Đăng nhập nhé.");
-            switchAuthMode("login");
+            // Đăng ký xong thì tự động yêu cầu OTP luôn cho mượt
+            authMode = "login"; // Chuyển ngầm sang login để handleRequestOtp hoạt động đúng
+            await handleRequestOtp(email);
         } else if (res === "AlreadyRegistered") {
-            alert("Gmail này đã đăng ký rồi Đại Ca ơi!");
+            alert("Gmail này đã đăng ký rồi Đại Ca ơi! Hãy quay lại tab Login.");
+            switchAuthMode("login");
         } else {
             alert("Lỗi: " + res);
         }

@@ -137,7 +137,7 @@ async function handleRegister(email) {
 }
 
 async function handleRequestOtp(email) {
-    toggleLoading(true);
+    setAuthBtnState("ĐANG GỬI OTP...", true, "refresh-cw");
     try {
         const res = await callCloud({ action: 'request_otp', email });
         if (res === "OTPSent") {
@@ -154,8 +154,6 @@ async function handleRequestOtp(email) {
     } catch (err) { 
         alert("Lỗi kết nối: " + err.message); 
         resetAuthButton();
-    } finally {
-        toggleLoading(false);
     }
 }
 
@@ -165,7 +163,7 @@ function resetAuthButton() {
 
 async function handleVerifyLogin(email, otp) {
     if (!otp) return alert("Vui lòng nhập mã OTP!");
-    toggleLoading(true);
+    setAuthBtnState("ĐANG XÁC MINH...", true, "refresh-cw");
 
     try {
         const res = await callCloud({ action: 'login', email, otp });
@@ -189,8 +187,6 @@ async function handleVerifyLogin(email, otp) {
     } catch (err) { 
         alert("Lỗi xác minh: " + err.message); 
         resetAuthButton();
-    } finally {
-        toggleLoading(false);
     }
 }
 
@@ -374,7 +370,7 @@ elements.btnCancel.addEventListener('click', () => elements.modal.classList.remo
 
 elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    toggleLoading(true);
+    toggleLoading(true); // Hiện mờ toàn web
     try {
         const data = Object.fromEntries(new FormData(elements.form).entries());
         if (editingId) {
@@ -387,25 +383,28 @@ elements.form.addEventListener('submit', async (e) => {
         await saveData();
         elements.modal.classList.remove('active-modal');
         render();
-    } catch (err) { alert("Lỗi lưu!"); }
-    finally {
-        toggleLoading(false);
+    } catch (err) { 
+        alert("Lỗi lưu dữ liệu!"); 
+    } finally {
+        // Tắt loading sau một khoảng trễ nhỏ để Đại Ca kịp thấy hiệu ứng mờ
+        setTimeout(() => toggleLoading(false), 300);
     }
 });
 
 window.deleteAccount = async (id) => {
     const acc = accounts.find(a => a.id === id);
     if (!acc) return;
-    if (confirm(`Xóa Gmail: ${acc.account}?`)) {
-        toggleLoading(true);
+    if (confirm(`Đại Ca có chắc muốn XÓA Gmail: ${acc.account}?`)) {
+        toggleLoading(true); // Hiện mờ toàn web
         try {
             accounts = accounts.filter(a => a.id !== id);
             await saveData();
             elements.modal.classList.remove('active-modal');
             render();
-        } catch (err) { alert("Lỗi!"); }
-        finally {
-            toggleLoading(false);
+        } catch (err) { 
+            alert("Lỗi khi xóa!"); 
+        } finally {
+            setTimeout(() => toggleLoading(false), 300);
         }
     }
 };

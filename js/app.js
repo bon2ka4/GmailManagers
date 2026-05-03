@@ -109,17 +109,28 @@ function render() {
         elements.accountList.innerHTML = filtered.map(acc => `
             <tr class="hover:bg-white/5 transition-colors cursor-pointer group" onclick="window.editAccount('${acc.id}')">
                 <td class="px-6 py-4">
-                    <div class="flex flex-col">
-                        <span class="font-semibold text-white">${acc.account}</span>
-                        <div class="flex items-center gap-2 text-xs text-blue-400 mt-1 relative" onclick="event.stopPropagation()">
-                            <span class="bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">${acc.password}</span>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2 group/item" onclick="event.stopPropagation()">
+                            <span class="font-semibold text-white">${acc.account}</span>
+                            <button onclick="window.copyToClipboard('${acc.account}', this)" class="opacity-0 group-hover/item:opacity-100 hover:text-blue-400 transition-opacity"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-blue-400 relative" onclick="event.stopPropagation()">
+                            <span class="bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 font-mono">${acc.password}</span>
                             <button onclick="window.copyToClipboard('${acc.password}', this)" class="hover:text-white"><i data-lucide="copy" class="w-3 h-3"></i></button>
                         </div>
                     </div>
                 </td>
                 <td class="px-6 py-4 text-sm">
-                    <div class="text-slate-300">${acc.phone || 'N/A'}</div>
-                    <div class="text-[10px] text-slate-500 mt-1">${acc.recovery_email || ''}</div>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2 text-slate-300 group/item" onclick="event.stopPropagation()">
+                            <span>${acc.phone || 'N/A'}</span>
+                            ${acc.phone ? `<button onclick="window.copyToClipboard('${acc.phone}', this)" class="opacity-0 group-hover/item:opacity-100 hover:text-blue-400 transition-opacity"><i data-lucide="copy" class="w-3 h-3"></i></button>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] text-slate-500 group/item" onclick="event.stopPropagation()">
+                            <span>${acc.recovery_email || ''}</span>
+                            ${acc.recovery_email ? `<button onclick="window.copyToClipboard('${acc.recovery_email}', this)" class="opacity-0 group-hover/item:opacity-100 hover:text-blue-400 transition-opacity"><i data-lucide="copy" class="w-3 h-3"></i></button>` : ''}
+                        </div>
+                    </div>
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2">

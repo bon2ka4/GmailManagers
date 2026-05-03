@@ -21,6 +21,7 @@ const elements = {
     
     statTotal: document.getElementById('stat-total'),
     statExpiring: document.getElementById('stat-expiring'),
+    statValid: document.getElementById('stat-valid'),
     searchInput: document.getElementById('search-input'),
     accountList: document.getElementById('account-list'),
     emptyState: document.getElementById('empty-state'),
@@ -248,6 +249,7 @@ function render() {
     const filtered = accounts.filter(a => a.account.toLowerCase().includes(term) || a.password.toLowerCase().includes(term));
     elements.statTotal.innerText = accounts.length;
     elements.statExpiring.innerText = accounts.filter(a => isOverdue(a.expiry_date)).length;
+    elements.statValid.innerText = accounts.filter(a => a.burial_date && a.expiry_date && a.burial_date < a.expiry_date).length;
 
     if (filtered.length === 0) {
         elements.accountList.innerHTML = '';

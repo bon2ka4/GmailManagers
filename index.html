@@ -82,7 +82,21 @@
         </div>
     </div>
 
-    <!-- 2. MÀN HÌNH CHÍNH (MAIN APP) -->
+    <!-- 2. MÀN HÌNH CHỜ ĐỒNG BỘ (SYNC SCREEN) -->
+    <div id="sync-screen" class="hidden fixed inset-0 bg-slate-950 z-[250] flex items-center justify-center flex-col gap-6 fade-in">
+        <div class="relative">
+            <div class="w-24 h-24 bg-blue-600 rounded-[32px] flex items-center justify-center shadow-2xl shadow-blue-600/40 animate-pulse">
+                <i data-lucide="refresh-cw" class="w-12 h-12 text-white animate-spin"></i>
+            </div>
+            <div class="absolute -inset-4 bg-blue-600/20 blur-2xl rounded-full animate-ping"></div>
+        </div>
+        <div class="text-center">
+            <h2 class="text-xl font-black tracking-widest text-white uppercase">Đang đồng bộ dữ liệu</h2>
+            <p class="text-slate-500 text-xs mt-2 font-bold uppercase tracking-widest">Đại Ca vui lòng đợi trong giây lát...</p>
+        </div>
+    </div>
+
+    <!-- 3. MÀN HÌNH CHÍNH (MAIN APP) -->
     <div id="main-app" class="hidden w-full max-w-6xl fade-in flex flex-col gap-6 my-10">
         <!-- Header -->
         <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -90,14 +104,11 @@
                 <h1 class="text-3xl font-black text-white tracking-tighter flex items-center gap-2">
                     GMAIL MANAGER <span class="bg-blue-600 text-[10px] px-2 py-1 rounded-md uppercase tracking-widest">SaaS</span>
                 </h1>
-                <p id="user-display" class="text-slate-400 text-sm font-medium mt-1">Chào Đại Ca, <span class="text-blue-400">admin@gmail.com</span></p>
+                <p id="user-display" class="text-slate-400 text-sm font-medium mt-1">Chào Đại Ca, <span class="text-blue-400 font-bold">...</span></p>
             </div>
             <div class="flex items-center gap-3">
                 <button id="btn-admin-panel" class="hidden p-3 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white rounded-2xl transition-all border border-amber-500/20 flex items-center gap-2 font-bold text-xs">
                     <i data-lucide="settings" class="w-4 h-4"></i> QUẢN TRỊ
-                </button>
-                <button id="btn-sync" class="p-3 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-2xl transition-all border border-white/5 flex items-center gap-2 font-bold text-xs min-w-[140px]">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> ĐỒNG BỘ CLOUD
                 </button>
                 <button id="btn-logout" class="p-3 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-2xl transition-all border border-rose-500/20">
                     <i data-lucide="log-out" class="w-5 h-5"></i>

@@ -17,6 +17,7 @@ const elements = {
     btnAdminPanel: document.getElementById('btn-admin-panel'),
     btnSync: document.getElementById('btn-sync'),
     btnLogout: document.getElementById('btn-logout'),
+    syncScreen: document.getElementById('sync-screen'),
     
     statTotal: document.getElementById('stat-total'),
     statExpiring: document.getElementById('stat-expiring'),
@@ -171,14 +172,13 @@ async function handleVerifyLogin(email, otp) {
 
 function enterApp() {
     elements.authScreen.classList.add('hidden');
-    elements.mainApp.classList.remove('hidden');
+    elements.syncScreen.classList.remove('hidden'); // Hiện màn hình chờ
     elements.userDisplay.innerHTML = `Chào Đại Ca, <span class="text-blue-400 font-bold">${CURRENT_USER}</span>`;
     
     if (IS_ADMIN) elements.btnAdminPanel.classList.remove('hidden');
     else elements.btnAdminPanel.classList.add('hidden');
     
-    render();
-    loadData(); // Tự động đồng bộ ngay khi vào Dashboard
+    loadData(); // Bắt đầu đồng bộ
 }
 
 // --- DATA LOGIC ---
@@ -193,8 +193,6 @@ async function callCloud(payload) {
 }
 
 async function loadData() {
-    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> <span>ĐANG ĐỒNG BỘ...</span>`;
-    lucide.createIcons();
     try {
         const storedOtp = sessionStorage.getItem('gmail_tool_otp') || "EXPIRED";
         const res = await callCloud({ action: 'login', email: CURRENT_USER, otp: storedOtp });
@@ -203,15 +201,16 @@ async function loadData() {
             accounts = res.data ? JSON.parse(res.data) : [];
             localStorage.setItem('gmail_tool_last_data_' + CURRENT_USER, JSON.stringify(accounts));
             render();
-            elements.btnSync.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> <span class="text-emerald-400">ĐÃ ĐỒNG BỘ</span>`;
+            
+            // Sync xong thì mới vào main app
+            elements.syncScreen.classList.add('hidden');
+            elements.mainApp.classList.remove('hidden');
         } else {
-            // Nếu OTP hết hạn (sau 5p), bắt người dùng login lại để lấy mã mới
-            elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 text-rose-500"></i> <span class="text-rose-500 text-[10px]">HẾT HẠN - LOGOUT LẠI</span>`;
+            alert("Phiên làm việc hết hạn. Vui lòng đăng nhập lại!");
+            elements.btnLogout.click();
         }
-        lucide.createIcons();
     } catch (e) { 
-        elements.btnSync.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-500"></i> <span>LỖI SYNC</span>`;
-        lucide.createIcons();
+        alert("Lỗi đồng bộ dữ liệu. Đại Ca kiểm tra lại mạng nhé!");
     }
 }
 
@@ -360,7 +359,6 @@ elements.form.addEventListener('submit', async (e) => {
     render();
 });
 
-elements.btnSync.addEventListener('click', loadData);
 elements.searchInput.addEventListener('input', render);
 
 elements.btnLogout.addEventListener('click', () => {

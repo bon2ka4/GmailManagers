@@ -54,6 +54,8 @@ let API_URL = localStorage.getItem('gmail_tool_api_url') || "";
 let CURRENT_USER = localStorage.getItem('gmail_tool_user') || "";
 let IS_ADMIN = sessionStorage.getItem('gmail_tool_is_admin') === 'true';
 let accounts = [];
+let sortField = null; // 'storage', 'burial_date', 'expiry_date'
+let sortDir = 'asc'; // 'asc', 'desc'
 let authMode = "login"; // login or register
 let isOtpSent = false;
 let editingId = null;
@@ -254,7 +256,31 @@ async function saveData() {
 
 function render() {
     const term = elements.searchInput.value.toLowerCase();
-    const filtered = accounts.filter(a => a.account.toLowerCase().includes(term) || a.password.toLowerCase().includes(term));
+    let displayList = [...accounts];
+
+    // 1. LOGIC SẮP XẾP (SORTING)
+    if (sortField) {
+        displayList.sort((a, b) => {
+            let valA, valB;
+            if (sortField === 'storage') {
+                // Quy đổi về GB để so sánh
+                valA = (parseFloat(a.storage_value) || 0) * (a.storage_unit === 'TB' ? 1024 : 1);
+                valB = (parseFloat(b.storage_value) || 0) * (b.storage_unit === 'TB' ? 1024 : 1);
+            } else {
+                // Đối với ngày tháng, nếu trống thì đẩy xuống cuối tùy theo chiều
+                valA = a[sortField] || (sortDir === 'asc' ? '9999-99-99' : '0000-00-00');
+                valB = b[sortField] || (sortDir === 'asc' ? '9999-99-99' : '0000-00-00');
+            }
+
+            if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+            if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    const filtered = displayList.filter(a => a.account.toLowerCase().includes(term) || a.password.toLowerCase().includes(term));
+    
+    // Cập nhật thống kê dựa trên dữ liệu gốc (không bị ảnh hưởng bởi sort/filter)
     elements.statTotal.innerText = accounts.length;
     elements.statExpiring.innerText = accounts.filter(a => isOverdue(a.expiry_date)).length;
     elements.statValid.innerText = accounts.filter(a => a.burial_date && a.expiry_date && a.burial_date < a.expiry_date).length;
@@ -267,6 +293,7 @@ function render() {
         elements.accountList.innerHTML = filtered.map((acc, index) => {
             const isViolation = acc.burial_date && acc.expiry_date && acc.burial_date >= acc.expiry_date;
             const overdue = isOverdue(acc.expiry_date);
+            const showMoveBtns = !sortField; // Chỉ hiện nút di chuyển nếu không ở chế độ sắp xếp
 
             return `
             <tr class="admin-row transition-all group border-b border-white/5 hover:bg-white/[0.02] ${isViolation ? 'bg-rose-500/10 border-l-2 border-l-rose-500' : ''}">
@@ -314,11 +341,12 @@ function render() {
                 </td>
                 <td class="px-6 py-4 text-center">
                     <div class="flex items-center justify-center gap-2" onclick="event.stopPropagation()">
-                        <!-- Nút Di chuyển -->
+                        <!-- Nút Di chuyển (Ẩn khi đang Sort) -->
+                        ${showMoveBtns ? `
                         <div class="flex flex-col gap-1 mr-2 border-r border-white/10 pr-2">
                             ${index > 0 ? `<button onclick="window.moveAccount('${acc.id}', -1)" class="w-8 h-8 flex items-center justify-center bg-blue-500/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-all border border-blue-500/20" title="Di chuyển lên"><i data-lucide="chevron-up" class="w-5 h-5"></i></button>` : '<div class="w-8 h-8"></div>'}
                             ${index < filtered.length - 1 ? `<button onclick="window.moveAccount('${acc.id}', 1)" class="w-8 h-8 flex items-center justify-center bg-blue-500/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-all border border-blue-500/20" title="Di chuyển xuống"><i data-lucide="chevron-down" class="w-5 h-5"></i></button>` : '<div class="w-8 h-8"></div>'}
-                        </div>
+                        </div>` : ''}
                         <button onclick="window.editAccount('${acc.id}')" class="p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                         <button onclick="window.deleteAccount('${acc.id}')" class="p-2 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
@@ -525,4 +553,18 @@ elements.btnResetSetup.addEventListener('click', () => {
         localStorage.clear();
         location.reload();
     }
+});
+window.toggleSort = (field) => {
+    if (sortField === field) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField = field;
+        sortDir = 'asc';
+    }
+    render();
+};
+
+// Khởi tạo các sự kiện
+document.addEventListener('DOMContentLoaded', () => {
+    // ... logic khởi tạo cũ giữ nguyên
 });

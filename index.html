@@ -159,10 +159,15 @@
                             <th class="px-6 py-5">Gmail & Mật khẩu</th>
                             <th class="px-6 py-4">SĐT / PHỤC HỒI</th>
                             <th class="px-6 py-4">AUTHEN</th>
-                            <th class="px-6 py-4">DUNG LƯỢNG</th>
-                            <th class="px-6 py-5 text-right">Chôn cất</th>
-                            <th class="px-6 py-5 text-right">Hết hạn</th>
-                            <th class="px-6 py-5 text-center">Hành động</th>
+                            <th class="px-6 py-4 cursor-pointer hover:text-blue-400 transition-all" onclick="window.toggleSort('storage')">
+                                <div class="flex items-center gap-1">DUNG LƯỢNG <i data-lucide="chevrons-up-down" class="w-3 h-3"></i></div>
+                            </th>
+                            <th class="px-6 py-5 text-right cursor-pointer hover:text-blue-400 transition-all" onclick="window.toggleSort('burial_date')">
+                                <div class="flex items-center justify-end gap-1">CHÔN CẤT <i data-lucide="chevrons-up-down" class="w-3 h-3"></i></div>
+                            </th>
+                            <th class="px-6 py-5 text-right cursor-pointer hover:text-blue-400 transition-all" onclick="window.toggleSort('expiry_date')">
+                                <div class="flex items-center justify-end gap-1">HẾT HẠN <i data-lucide="chevrons-up-down" class="w-3 h-3"></i></div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody id="account-list" class="divide-y divide-white/5 text-sm">

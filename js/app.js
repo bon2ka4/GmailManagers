@@ -153,8 +153,9 @@ elements.btnSendRecoveryMail.addEventListener('click', async () => {
     const apiUrl = API_URL || localStorage.getItem('gmail_tool_api_url_raw');
     if (!apiUrl) return alert("Cần Link Apps Script để gửi mail!");
 
-    elements.btnSendRecoveryMail.innerText = "Đang gửi...";
+    elements.btnSendRecoveryMail.innerHTML = `<i data-lucide="refresh-cw" class="w-3 h-3 animate-spin"></i> <span>Đang gửi...</span>`;
     elements.btnSendRecoveryMail.disabled = true;
+    lucide.createIcons();
 
     try {
         const response = await fetch(apiUrl, {
@@ -162,15 +163,25 @@ elements.btnSendRecoveryMail.addEventListener('click', async () => {
             body: JSON.stringify({ action: 'request_recovery', email: email })
         });
         const result = await response.text();
-        if (result === 'EmailSent') alert("Mã khôi phục đã được gửi vào Gmail của Đại Ca!");
-        else if (result === 'InvalidEmail') alert("Gmail này không đúng!");
-        else alert("Lỗi: " + result);
+        if (result === 'EmailSent') {
+            elements.btnSendRecoveryMail.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-emerald-400"></i> <span class="text-emerald-400 font-bold uppercase tracking-tighter">Đã gửi</span>`;
+            elements.btnSendRecoveryMail.classList.remove('bg-blue-600');
+            elements.btnSendRecoveryMail.classList.add('bg-emerald-500/10', 'border', 'border-emerald-500/20');
+        } else if (result === 'InvalidEmail') {
+            alert("Gmail này không đúng!");
+            elements.btnSendRecoveryMail.innerText = "Gửi mã";
+            elements.btnSendRecoveryMail.disabled = false;
+        } else {
+            alert("Lỗi: " + result);
+            elements.btnSendRecoveryMail.innerText = "Gửi mã";
+            elements.btnSendRecoveryMail.disabled = false;
+        }
     } catch (err) {
         alert("Lỗi kết nối: " + err.message);
-    } finally {
         elements.btnSendRecoveryMail.innerText = "Gửi mã";
         elements.btnSendRecoveryMail.disabled = false;
     }
+    lucide.createIcons();
 });
 
 elements.forgotForm.addEventListener('submit', async (e) => {

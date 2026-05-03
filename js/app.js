@@ -67,30 +67,21 @@ elements.btnShowSetup.addEventListener('click', () => {
 
 // --- AUTO LOGIN CHECK ---
 window.addEventListener('DOMContentLoaded', () => {
-    const rememberedKey = localStorage.getItem('gmail_tool_remembered_key');
-    const rememberedEmail = localStorage.getItem('gmail_tool_remembered_email');
-    const encryptedUrl = localStorage.getItem('gmail_tool_api_url_encrypted');
-
-    if (rememberedKey && rememberedEmail && encryptedUrl) {
+    // Nếu CSS đã xử lý ẩn màn hình login (is-logged-in)
+    if (document.documentElement.classList.contains('is-logged-in')) {
+        const rememberedKey = localStorage.getItem('gmail_tool_remembered_key');
+        const encryptedUrl = localStorage.getItem('gmail_tool_api_url_encrypted');
+        
         try {
             const bytes = CryptoJS.AES.decrypt(encryptedUrl, rememberedKey);
-            const decryptedUrl = bytes.toString(CryptoJS.enc.Utf8);
-            if (decryptedUrl) {
-                API_URL = decryptedUrl;
-                MASTER_KEY = rememberedKey;
-                // Ẩn màn hình login ngay lập tức (không dùng hidden để tránh lỗi kẹt)
-                elements.loginScreen.style.display = 'none';
-                elements.mainApp.classList.remove('blur-xl', 'opacity-0');
-                loadData();
-                return;
-            }
-        } catch (e) { 
-            console.error("Auto login failed", e);
+            API_URL = bytes.toString(CryptoJS.enc.Utf8);
+            MASTER_KEY = rememberedKey;
+            loadData();
+        } catch (e) {
+            document.documentElement.classList.remove('is-logged-in');
+            elements.loginScreen.style.display = 'flex';
         }
     }
-    
-    // Nếu không auto-login được, màn hình Login đã có sẵn ở đó rồi
-    elements.loginScreen.classList.remove('opacity-0', 'pointer-events-none');
 });
 
 // --- AUTH UTILS ---
@@ -383,6 +374,7 @@ elements.btnInfo.addEventListener('click', () => {
 elements.btnLogout.addEventListener('click', () => {
     localStorage.removeItem('gmail_tool_remembered_key');
     localStorage.removeItem('gmail_tool_remembered_email');
+    document.documentElement.classList.remove('is-logged-in');
     location.reload();
 });
 

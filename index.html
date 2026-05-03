@@ -4,6 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gmail Manager - Premium Tool</title>
+    
+    <!-- Senior Flash Fix: Kiểm tra login ngay lập tức trước khi render body -->
+    <script>
+        (function() {
+            const hasSession = localStorage.getItem('gmail_tool_remembered_key') && localStorage.getItem('gmail_tool_api_url_encrypted');
+            if (hasSession) {
+                document.documentElement.classList.add('is-logged-in');
+            }
+        })();
+    </script>
+
+    <style>
+        /* Mặc định ẩn Dashboard */
+        #main-app { display: none; }
+        /* Nếu đã login, ẩn màn hình Login và hiện Dashboard ngay lập tức */
+        .is-logged-in #login-screen { display: none !important; }
+        .is-logged-in #main-app { display: block !important; opacity: 1 !important; filter: none !important; }
+    </style>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>

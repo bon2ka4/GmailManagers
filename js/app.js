@@ -18,7 +18,7 @@ const elements = {
     btnSync: document.getElementById('btn-sync'),
     btnLogout: document.getElementById('btn-logout'),
     syncScreen: document.getElementById('sync-screen'),
-    
+
     statTotal: document.getElementById('stat-total'),
     statExpiring: document.getElementById('stat-expiring'),
     statValid: document.getElementById('stat-valid'),
@@ -96,7 +96,7 @@ function switchAuthMode(mode) {
     elements.otpSection.classList.add('hidden');
     elements.authTitle.innerText = mode === "login" ? "ĐĂNG NHẬP" : "ĐĂNG KÝ";
     elements.authSubtitle.innerText = mode === "login" ? "Dùng OTP để bảo mật tuyệt đối" : "Tham gia hệ thống quản lý Gmail";
-    
+
     elements.tabLogin.className = mode === "login" ? "flex-1 py-2 rounded-xl text-sm font-bold bg-blue-600 text-white transition-all cursor-pointer" : "flex-1 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
     elements.tabRegister.className = mode === "register" ? "flex-1 py-2 rounded-xl text-sm font-bold bg-blue-600 text-white transition-all cursor-pointer" : "flex-1 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition-all cursor-pointer";
     resetAuthButton();
@@ -130,7 +130,7 @@ async function handleRegister(email) {
     try {
         const res = await callCloud({ action: 'register', email });
         if (res === "Success") {
-            authMode = "login"; 
+            authMode = "login";
             await handleRequestOtp(email);
         } else if (res === "AlreadyRegistered") {
             resetAuthButton();
@@ -140,8 +140,8 @@ async function handleRegister(email) {
             resetAuthButton();
             alert("Lỗi: " + res);
         }
-    } catch (err) { 
-        alert("Lỗi kết nối: " + err.message); 
+    } catch (err) {
+        alert("Lỗi kết nối: " + err.message);
         resetAuthButton();
     }
 }
@@ -157,12 +157,12 @@ async function handleRequestOtp(email) {
         } else if (res === "NotRegistered") {
             resetAuthButton();
             alert("Gmail chưa đăng ký. Đại Ca sang tab Register nhé!");
-        } else { 
+        } else {
             resetAuthButton();
-            alert("Lỗi: " + res); 
+            alert("Lỗi: " + res);
         }
-    } catch (err) { 
-        alert("Lỗi kết nối: " + err.message); 
+    } catch (err) {
+        alert("Lỗi kết nối: " + err.message);
         resetAuthButton();
     }
 }
@@ -187,15 +187,15 @@ async function handleVerifyLogin(email, otp) {
 
             if (elements.rememberMe.checked) localStorage.setItem('gmail_tool_user', email);
             localStorage.setItem('gmail_tool_last_data_' + email, res.data || "[]");
-            
+
             accounts = res.data ? JSON.parse(res.data) : [];
             enterApp();
         } else {
             alert("Mã OTP không đúng hoặc đã hết hạn!");
             setAuthBtnState("XÁC MINH & ĐĂNG NHẬP", false, "check-circle");
         }
-    } catch (err) { 
-        alert("Lỗi xác minh: " + err.message); 
+    } catch (err) {
+        alert("Lỗi xác minh: " + err.message);
         resetAuthButton();
     }
 }
@@ -204,7 +204,7 @@ function enterApp() {
     elements.authScreen.classList.add('hidden');
     elements.syncScreen.classList.remove('hidden');
     elements.userDisplay.innerHTML = `Chào Đại Ca, <span class="text-blue-400 font-bold">${CURRENT_USER}</span>`;
-    
+
     // MASTER OVERRIDE: Đại Ca luôn là Admin
     if (CURRENT_USER === "bon1998.canhan@gmail.com") {
         IS_ADMIN = true;
@@ -224,7 +224,7 @@ function enterApp() {
 async function callCloud(payload) {
     const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
     const text = await response.text();
-    try { return JSON.parse(text); } catch(e) { return text; }
+    try { return JSON.parse(text); } catch (e) { return text; }
 }
 
 async function loadData() {
@@ -267,7 +267,7 @@ function render() {
         elements.accountList.innerHTML = filtered.map((acc, index) => {
             const isViolation = acc.burial_date && acc.expiry_date && acc.burial_date >= acc.expiry_date;
             const overdue = isOverdue(acc.expiry_date);
-            
+
             return `
             <tr class="admin-row transition-all group border-b border-white/5 hover:bg-white/[0.02] ${isViolation ? 'bg-rose-500/10 border-l-2 border-l-rose-500' : ''}">
                 <td class="px-6 py-4">
@@ -300,8 +300,8 @@ function render() {
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${overdue ? 'bg-rose-500/20 text-rose-500 border border-rose-500/50' : (acc.expiry_date ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-400')}">
-                        ${acc.expiry_date ? formatDate(acc.expiry_date) : 'VĨNH VIỄN'}
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${overdue ? 'bg-rose-500/20 text-rose-500 border border-rose-500/50' : 'bg-emerald-500/10 text-emerald-500'}">
+                        ${acc.expiry_date ? formatDate(acc.expiry_date) : 'CHƯA CÀI ĐẶT'}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-center">
@@ -324,7 +324,7 @@ function render() {
 }
 
 function isOverdue(date) {
-    if (!date) return false;
+    if (!date) return true; // Không có ngày hết hạn = Coi như quá hạn (cần xử lý)
     const today = new Date().toISOString().split('T')[0];
     return date < today;
 }
@@ -416,16 +416,16 @@ window.editAccount = (id) => {
     editingId = id;
     elements.modalTitle.innerText = "CHỈNH SỬA GMAIL";
     elements.btnDelete.classList.remove('hidden');
-    
-    for (let key in acc) { 
+
+    for (let key in acc) {
         if (elements.form[key]) {
             let val = acc[key];
             // Nếu là trường ngày, format lại sang dd/mm/yyyy để hiện thị
             if ((key === 'expiry_date' || key === 'burial_date') && val) {
                 val = formatDate(val);
             }
-            elements.form[key].value = val; 
-        } 
+            elements.form[key].value = val;
+        }
     }
     elements.modal.classList.add('active-modal');
 };
@@ -461,8 +461,8 @@ elements.form.addEventListener('submit', async (e) => {
         await saveData();
         elements.modal.classList.remove('active-modal');
         render();
-    } catch (err) { 
-        alert("Lỗi lưu dữ liệu!"); 
+    } catch (err) {
+        alert("Lỗi lưu dữ liệu!");
     } finally {
         // Tắt loading sau một khoảng trễ nhỏ để Đại Ca kịp thấy hiệu ứng mờ
         setTimeout(() => toggleLoading(false), 300);
@@ -486,8 +486,8 @@ window.deleteAccount = async (id) => {
             await saveData();
             elements.modal.classList.remove('active-modal');
             render();
-        } catch (err) { 
-            alert("Lỗi khi xóa!"); 
+        } catch (err) {
+            alert("Lỗi khi xóa!");
         } finally {
             setTimeout(() => toggleLoading(false), 300);
         }

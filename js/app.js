@@ -122,6 +122,8 @@ elements.loginForm.addEventListener('submit', async (e) => {
             localStorage.setItem('gmail_tool_remembered_email', email);
         }
         
+        document.documentElement.classList.add('is-logged-in');
+        
         // Tạo Recovery Token
         const token = generateRecoveryToken();
         elements.displayRecoveryToken.innerText = token;
@@ -145,6 +147,7 @@ elements.loginForm.addEventListener('submit', async (e) => {
                 localStorage.setItem('gmail_tool_remembered_email', email);
             }
             
+            document.documentElement.classList.add('is-logged-in');
             elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => {
                 elements.loginScreen.style.display = 'none';
@@ -159,6 +162,7 @@ elements.loginForm.addEventListener('submit', async (e) => {
 
 elements.btnConfirmRecovery.addEventListener('click', async () => {
     elements.recoveryModal.classList.remove('active-modal');
+    document.documentElement.classList.add('is-logged-in');
     elements.loginScreen.classList.add('opacity-0', 'pointer-events-none', 'hidden');
     elements.mainApp.classList.remove('hidden');
     setTimeout(() => {

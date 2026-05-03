@@ -390,32 +390,35 @@ elements.btnAdd.addEventListener('click', () => {
 elements.btnCancel.addEventListener('click', () => elements.modal.classList.remove('active-modal'));
 elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    // Chọn nút Lưu Gmail (nút đầu tiên trong cụm nút)
     const btnSubmit = elements.form.querySelector('button[type="submit"]');
-    const originalContent = btnSubmit.innerHTML;
     
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> ĐANG LƯU...`;
-    lucide.createIcons();
+    if (btnSubmit) {
+        const originalContent = btnSubmit.innerHTML;
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> <span>ĐANG LƯU...</span>`;
+        if (window.lucide) lucide.createIcons();
 
-    const data = Object.fromEntries(new FormData(elements.form).entries());
-    if (editingId) {
-        const idx = accounts.findIndex(a => a.id === editingId);
-        accounts[idx] = { ...accounts[idx], ...data };
-    } else {
-        data.id = Date.now().toString();
-        accounts.push(data);
-    }
+        try {
+            const data = Object.fromEntries(new FormData(elements.form).entries());
+            if (editingId) {
+                const idx = accounts.findIndex(a => a.id === editingId);
+                accounts[idx] = { ...accounts[idx], ...data };
+            } else {
+                data.id = Date.now().toString();
+                accounts.push(data);
+            }
 
-    try {
-        await saveData();
-        elements.modal.classList.remove('active-modal');
-        render();
-    } catch (err) {
-        alert("Lỗi khi lưu dữ liệu!");
-    } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = originalContent;
-        lucide.createIcons();
+            await saveData();
+            elements.modal.classList.remove('active-modal');
+            render();
+        } catch (err) {
+            alert("Lỗi khi lưu dữ liệu!");
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = originalContent;
+            if (window.lucide) lucide.createIcons();
+        }
     }
 });
 

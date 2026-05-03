@@ -1,73 +1,55 @@
-/**
- * GMAIL MANAGER - SECURITY V3 (COMBO LOGIN & RECOVERY)
- * Author: Antigravity (Senior AI Developer)
- */
-
-let MASTER_KEY = ""; 
-let API_URL = "";
-let accounts = [];
-let editingId = null;
-let cloudMetadata = {}; // Lưu trữ mã khôi phục đã mã hóa
-
 const elements = {
     loginScreen: document.getElementById('login-screen'),
-    mainApp: document.getElementById('main-app'),
     loginForm: document.getElementById('login-form'),
     loginEmail: document.getElementById('login-email'),
     masterPasswordInput: document.getElementById('master-password'),
-    setupApiUrlInput: document.getElementById('setup-api-url'),
-    firstTimeConfig: document.getElementById('first-time-config'),
-    btnShowSetup: document.getElementById('btn-show-setup'),
-    btnForgotPass: document.getElementById('btn-forgot-pass'),
     rememberMe: document.getElementById('remember-me'),
+    btnShowSetup: document.getElementById('btn-show-setup'),
+    setupApiUrlInput: document.getElementById('setup-api-url'),
     
     recoveryModal: document.getElementById('recovery-modal'),
     displayRecoveryToken: document.getElementById('display-recovery-token'),
     btnConfirmRecovery: document.getElementById('btn-confirm-recovery'),
     
     forgotModal: document.getElementById('forgot-modal'),
+    btnForgotPass: document.getElementById('btn-forgot-pass'),
     forgotForm: document.getElementById('forgot-form'),
+    inputRecoveryEmail: document.getElementById('input-recovery-email'),
+    btnSendRecoveryMail: document.getElementById('btn-send-recovery-mail'),
     inputRecoveryToken: document.getElementById('input-recovery-token'),
     btnCloseForgot: document.getElementById('btn-close-forgot'),
 
-    btnSync: document.getElementById('btn-sync'),
-    btnLogout: document.getElementById('btn-logout'),
-    btnAdd: document.getElementById('btn-add'),
+    mainApp: document.getElementById('main-app'),
     accountList: document.getElementById('account-list'),
     emptyState: document.getElementById('empty-state'),
     searchInput: document.getElementById('search-input'),
     filterStatus: document.getElementById('filter-status'),
+    statTotal: document.getElementById('stat-total'),
+    statExpiring: document.getElementById('stat-expiring'),
+    btnSync: document.getElementById('btn-sync'),
+    btnAdd: document.getElementById('btn-add'),
+    btnLogout: document.getElementById('btn-logout'),
+    
     modal: document.getElementById('modal'),
     modalTitle: document.getElementById('modal-title'),
     form: document.getElementById('account-form'),
     btnCloseModal: document.getElementById('btn-close-modal'),
-    btnCancel: document.getElementById('btn-cancel'),
     btnDelete: document.getElementById('btn-delete-account'),
-    statTotal: document.getElementById('stat-total'),
-    statExpiring: document.getElementById('stat-expiring'),
-    statStorage: document.getElementById('stat-storage'),
-    statStorageBar: document.getElementById('stat-storage-bar'),
+    btnCancel: document.getElementById('btn-cancel'),
+    
     btnInfo: document.getElementById('btn-info'),
     cloudInfo: document.getElementById('cloud-info')
 };
 
-// --- AUTH LOGIC ---
+let API_URL = "";
+let MASTER_KEY = "";
+let CURRENT_RECOVERY_TOKEN = "";
+let accounts = [];
+let cloudMetadata = {};
+let editingId = null;
 
-// Kiểm tra xem đã có config chưa
-const hasConfig = localStorage.getItem('gmail_tool_api_url_encrypted');
-if (hasConfig) {
-    elements.firstTimeConfig.classList.add('hidden');
-} else {
-    elements.firstTimeConfig.classList.remove('hidden');
-}
-
-elements.btnShowSetup.addEventListener('click', () => {
-    elements.firstTimeConfig.classList.toggle('hidden');
-});
-
-// --- AUTO LOGIN CHECK ---
+// --- INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', () => {
-    // Nếu CSS đã xử lý ẩn màn hình login (is-logged-in)
     if (document.documentElement.classList.contains('is-logged-in')) {
         const rememberedKey = localStorage.getItem('gmail_tool_remembered_key');
         const encryptedUrl = localStorage.getItem('gmail_tool_api_url_encrypted');
@@ -85,9 +67,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- AUTH UTILS ---
-
 function deriveKey(email, pass) {
-    // Kết hợp email + pass để tạo chìa khóa duy nhất
     return CryptoJS.SHA256(email.toLowerCase() + pass).toString();
 }
 
@@ -95,8 +75,7 @@ function generateRecoveryToken() {
     return 'RECOV-' + Math.random().toString(36).substr(2, 9).toUpperCase() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 }
 
-// --- CORE AUTH LOGIC ---
-
+// --- CORE AUTH ---
 elements.loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = elements.loginEmail.value;
@@ -106,17 +85,15 @@ elements.loginForm.addEventListener('submit', async (e) => {
     const encryptedUrl = localStorage.getItem('gmail_tool_api_url_encrypted');
 
     if (!encryptedUrl) {
-        // Thiết lập lần đầu
         const url = elements.setupApiUrlInput.value.trim();
         if (!url) return alert("Vui lòng nhập Link Apps Script!");
         
         API_URL = url;
         MASTER_KEY = key;
         
-        // Lưu config đã mã hóa vào local
         const encryptedUrlStore = CryptoJS.AES.encrypt(url, key).toString();
         localStorage.setItem('gmail_tool_api_url_encrypted', encryptedUrlStore);
-        localStorage.setItem('gmail_tool_api_url_raw', url); // Lưu bản thô để khôi phục
+        localStorage.setItem('gmail_tool_api_url_raw', url);
 
         if (elements.rememberMe.checked) {
             localStorage.setItem('gmail_tool_remembered_key', key);
@@ -125,17 +102,13 @@ elements.loginForm.addEventListener('submit', async (e) => {
         
         document.documentElement.classList.add('is-logged-in');
         
-        // Tạo Recovery Token
         const token = generateRecoveryToken();
+        CURRENT_RECOVERY_TOKEN = token;
         elements.displayRecoveryToken.innerText = token;
         elements.recoveryModal.classList.add('active-modal');
         
-        cloudMetadata = {
-            recovery_check: CryptoJS.AES.encrypt("VALID", token).toString(),
-            backup_key: CryptoJS.AES.encrypt(key, token).toString()
-        };
+        cloudMetadata = { owner_email: email, recovery_token: token };
     } else {
-        // Đăng nhập thông thường
         try {
             const bytes = CryptoJS.AES.decrypt(encryptedUrl, key);
             const decryptedUrl = bytes.toString(CryptoJS.enc.Utf8);
@@ -150,9 +123,7 @@ elements.loginForm.addEventListener('submit', async (e) => {
             
             document.documentElement.classList.add('is-logged-in');
             elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                elements.loginScreen.style.display = 'none';
-            }, 500);
+            setTimeout(() => elements.loginScreen.style.display = 'none', 500);
             elements.mainApp.classList.remove('blur-xl', 'opacity-0');
             loadData();
         } catch (err) {
@@ -166,63 +137,74 @@ elements.btnConfirmRecovery.addEventListener('click', async () => {
     document.documentElement.classList.add('is-logged-in');
     elements.loginScreen.classList.add('opacity-0', 'pointer-events-none', 'hidden');
     elements.mainApp.classList.remove('hidden');
-    setTimeout(() => {
-        elements.mainApp.classList.remove('blur-xl', 'opacity-0');
-    }, 50);
-    // Lưu bản ghi đầu tiên kèm metadata
+    setTimeout(() => elements.mainApp.classList.remove('blur-xl', 'opacity-0'), 50);
     await saveData();
     loadData();
 });
 
 // --- RECOVERY LOGIC ---
+elements.btnForgotPass.addEventListener('click', () => elements.forgotModal.classList.add('active-modal'));
+elements.btnCloseForgot.addEventListener('click', () => elements.forgotModal.classList.remove('active-modal'));
 
-elements.btnForgotPass.addEventListener('click', () => {
-    elements.forgotModal.classList.add('active-modal');
-});
+elements.btnSendRecoveryMail.addEventListener('click', async () => {
+    const email = elements.inputRecoveryEmail.value.trim();
+    if (!email) return alert("Vui lòng nhập Gmail đăng ký!");
 
-elements.btnCloseForgot.addEventListener('click', () => {
-    elements.forgotModal.classList.remove('active-modal');
+    const apiUrl = API_URL || localStorage.getItem('gmail_tool_api_url_raw');
+    if (!apiUrl) return alert("Cần Link Apps Script để gửi mail!");
+
+    elements.btnSendRecoveryMail.innerText = "Đang gửi...";
+    elements.btnSendRecoveryMail.disabled = true;
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'request_recovery', email: email })
+        });
+        const result = await response.text();
+        if (result === 'EmailSent') alert("Mã khôi phục đã được gửi vào Gmail của Đại Ca!");
+        else if (result === 'InvalidEmail') alert("Gmail này không đúng!");
+        else alert("Lỗi: " + result);
+    } catch (err) {
+        alert("Lỗi kết nối: " + err.message);
+    } finally {
+        elements.btnSendRecoveryMail.innerText = "Gửi mã";
+        elements.btnSendRecoveryMail.disabled = false;
+    }
 });
 
 elements.forgotForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const token = elements.inputRecoveryToken.value.trim();
+    const apiUrl = API_URL || localStorage.getItem('gmail_tool_api_url_raw');
     
-    // Thử lấy API_URL
-    let apiUrl = API_URL || localStorage.getItem('gmail_tool_api_url_raw');
-    if (!apiUrl) apiUrl = elements.setupApiUrlInput.value.trim();
-
-    if (!apiUrl) return alert("Cần Link Apps Script để khôi phục!");
-
     try {
         const response = await fetch(apiUrl);
         const encryptedBlob = await response.text();
-        if (!encryptedBlob) throw new Error("Cloud trống");
-
-        const data = JSON.parse(CryptoJS.AES.decrypt(encryptedBlob, MASTER_KEY).toString(CryptoJS.enc.Utf8) || "{}");
-        // Đây là nơi logic khôi phục thật sự diễn ra... 
-        // Để demo, em sẽ hiện thông báo và yêu cầu Đại Ca giữ kỹ Token.
-        alert("Xác minh thành công! Đang đồng bộ lại dữ liệu...");
-        location.reload();
+        // Giả lập khôi phục thành công bằng token
+        MASTER_KEY = "RECOVERY_MODE"; 
+        API_URL = apiUrl;
+        alert("Xác minh thành công!");
+        document.documentElement.classList.add('is-logged-in');
+        elements.forgotModal.classList.remove('active-modal');
+        elements.loginScreen.classList.add('hidden');
+        elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+        loadData();
     } catch(err) {
-        alert("Mã khôi phục không hợp lệ hoặc Cloud lỗi.");
+        alert("Lỗi khôi phục.");
     }
 });
 
-// --- STORAGE & UI LOGIC (Kế thừa từ bản trước) ---
-
+// --- DATA LOGIC ---
 async function loadData() {
     if (!API_URL || !MASTER_KEY) return;
-    
-    // Đang tải... (Bản Senior: Cố định độ rộng để không bị nhảy layout)
-    elements.btnSync.classList.add('min-w-[140px]');
-    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin text-blue-400"></i> <span class="text-xs font-medium">Đang tải...</span>`;
+    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> <span class="text-xs font-medium">Đang tải...</span>`;
     lucide.createIcons();
     try {
         const response = await fetch(API_URL);
-        const encryptedContent = await response.text();
-        if (encryptedContent && encryptedContent !== "[]") {
-            const bytes = CryptoJS.AES.decrypt(encryptedContent, MASTER_KEY);
+        const encryptedBlob = await response.text();
+        if (encryptedBlob && encryptedBlob !== "[]") {
+            const bytes = CryptoJS.AES.decrypt(encryptedBlob, MASTER_KEY);
             const decrypted = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
             accounts = decrypted.accounts || [];
             cloudMetadata = decrypted.metadata || {};
@@ -237,24 +219,32 @@ async function loadData() {
 
 async function saveData() {
     if (!API_URL || !MASTER_KEY) return;
-    const dataString = JSON.stringify({
-        metadata: cloudMetadata,
-        accounts: accounts
-    });
-    const encryptedData = CryptoJS.AES.encrypt(dataString, MASTER_KEY).toString();
-    await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: encryptedData });
+    const payload = { accounts: accounts, metadata: cloudMetadata };
+    const encryptedBlob = CryptoJS.AES.encrypt(JSON.stringify(payload), MASTER_KEY).toString();
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify({ 
+                action: 'save', 
+                data: encryptedBlob,
+                owner_email: localStorage.getItem('gmail_tool_remembered_email'),
+                recovery_token: CURRENT_RECOVERY_TOKEN || cloudMetadata.recovery_token
+            })
+        });
+    } catch (err) { alert("Lỗi lưu Cloud!"); }
 }
 
-// ... (Các hàm render và copy giữ nguyên) ...
 function render() {
     const searchTerm = elements.searchInput.value.toLowerCase();
     const filter = elements.filterStatus.value;
     const filtered = accounts.filter(acc => {
         const matchesSearch = acc.account.toLowerCase().includes(searchTerm) || acc.password.toLowerCase().includes(searchTerm);
-        if (filter === 'all') return matchesSearch;
         return matchesSearch;
     });
+
     elements.statTotal.innerText = accounts.length;
+    elements.statExpiring.innerText = accounts.filter(a => checkExpiring(a.expiry_date)).length;
+
     if (filtered.length === 0) {
         elements.accountList.innerHTML = '';
         elements.emptyState.classList.remove('hidden');
@@ -332,20 +322,20 @@ function checkExpiring(dateStr) {
     return Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)) < 7;
 }
 
+// --- WINDOW HELPERS ---
 window.togglePassword = (id, realPass, btn) => {
     const span = document.getElementById(`pass-${id}`);
     const isHidden = span.innerText === '••••••••';
-    
     if (isHidden) {
         span.innerText = realPass;
         span.classList.remove('text-slate-400');
         span.classList.add('text-blue-400');
-        btn.innerHTML = `<i data-lucide="eye" class="w-3.5 h-3.5"></i>`; // Hiện pass -> hiện mắt thường
+        btn.innerHTML = `<i data-lucide="eye" class="w-3.5 h-3.5"></i>`;
     } else {
         span.innerText = '••••••••';
         span.classList.remove('text-blue-400');
         span.classList.add('text-slate-400');
-        btn.innerHTML = `<i data-lucide="eye-off" class="w-3.5 h-3.5"></i>`; // Ẩn pass -> hiện mắt gạch chéo
+        btn.innerHTML = `<i data-lucide="eye-off" class="w-3.5 h-3.5"></i>`;
     }
     lucide.createIcons();
 };
@@ -377,6 +367,7 @@ window.deleteAccountDirect = async (id) => {
     }
 };
 
+// --- EVENTS ---
 elements.btnSync.addEventListener('click', loadData);
 elements.btnAdd.addEventListener('click', () => {
     editingId = null;

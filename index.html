@@ -23,28 +23,27 @@
             <div class="w-20 h-20 bg-blue-600 rounded-3xl shadow-lg shadow-blue-600/30 flex items-center justify-center mx-auto mb-8">
                 <i data-lucide="shield-check" class="w-10 h-10 text-white"></i>
             </div>
-            <h2 class="text-3xl font-bold mb-2">Hệ thống bảo mật</h2>
-            <p class="text-slate-400 text-sm mb-8">Vui lòng nhập mật khẩu quản trị để truy cập</p>
+            <h2 class="text-3xl font-bold mb-8 uppercase tracking-widest">Login</h2>
             
             <form id="login-form" class="space-y-4">
                 <div class="relative">
                     <i data-lucide="mail" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                    <input type="email" id="login-email" placeholder="Gmail quản trị..." required class="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                    <input type="email" id="login-email" placeholder="Gmail..." required class="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
                 </div>
                 <div class="relative">
                     <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
-                    <input type="password" id="master-password" placeholder="Mật khẩu..." required class="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-600 transition-all text-center tracking-[0.3em]">
+                    <input type="password" id="master-password" placeholder="Password..." required class="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-600 transition-all text-center tracking-[0.3em]">
                 </div>
                 
                 <div id="first-time-config" class="hidden animate-fadeIn py-4 border-t border-white/5 mt-4 text-left">
-                    <label class="text-xs font-bold text-blue-400 uppercase mb-2 block">Cấu hình Cloud (Lần đầu)</label>
-                    <input type="text" id="setup-api-url" placeholder="Dán link Apps Script tại đây..." class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-xs outline-none">
+                    <label class="text-xs font-bold text-blue-400 uppercase mb-2 block tracking-wider">Cloud Setup</label>
+                    <input type="text" id="setup-api-url" placeholder="Apps Script URL..." class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-xs outline-none">
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95">MỞ KHÓA HỆ THỐNG</button>
-                <button type="button" id="btn-forgot-pass" class="text-xs text-slate-500 block mx-auto hover:text-blue-400 transition-colors">Quên mật khẩu / Dùng mã khôi phục</button>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95 uppercase tracking-widest">Unlock</button>
+                <button type="button" id="btn-forgot-pass" class="text-[10px] text-slate-500 block mx-auto hover:text-blue-400 transition-colors uppercase tracking-widest mt-2">Forgot Password</button>
             </form>
-            <button id="btn-show-setup" class="text-xs text-slate-400 mt-6 hover:text-white underline transition-colors">Thiết lập lại Cloud URL</button>
+            <button id="btn-show-setup" class="text-[10px] text-slate-400 mt-8 hover:text-white transition-colors uppercase tracking-widest">Reset</button>
         </div>
     </div>
 

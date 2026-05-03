@@ -303,13 +303,13 @@ function render() {
                     <span class="text-xs font-bold text-slate-300">${acc.storage_value || 15} ${acc.storage_unit || 'GB'}</span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${acc.burial_date ? 'bg-slate-500/10 text-slate-400' : 'bg-blue-500/10 text-blue-400'}">
-                        ${acc.burial_date ? formatDate(acc.burial_date) : 'VĨNH VIỄN'}
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${acc.burial_date ? 'bg-slate-500/10 text-slate-400' : 'bg-amber-500/10 text-amber-500 border border-amber-500/30'}">
+                        ${acc.burial_date ? formatDate(acc.burial_date) : 'CHƯA CHÔN'}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
                     <span class="px-2 py-1 rounded-lg text-[10px] font-black ${overdue ? 'bg-rose-500/20 text-rose-500 border border-rose-500/50' : 'bg-emerald-500/10 text-emerald-500'}">
-                        ${acc.expiry_date ? formatDate(acc.expiry_date) : 'CHƯA CÀI ĐẶT'}
+                        ${acc.expiry_date ? formatDate(acc.expiry_date) : 'VĨNH VIỄN'}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-center">

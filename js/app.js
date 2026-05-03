@@ -242,7 +242,7 @@ function render() {
         elements.emptyState.classList.remove('hidden');
     } else {
         elements.emptyState.classList.add('hidden');
-        elements.accountList.innerHTML = filtered.map(acc => `
+        elements.accountList.innerHTML = filtered.map((acc, index) => `
             <tr class="admin-row transition-all group border-b border-white/5 hover:bg-white/[0.02]">
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2 group/item">
@@ -280,6 +280,11 @@ function render() {
                 </td>
                 <td class="px-6 py-4 text-center">
                     <div class="flex items-center justify-center gap-2" onclick="event.stopPropagation()">
+                        <!-- Nút Di chuyển -->
+                        <div class="flex flex-col gap-1 mr-2 border-r border-white/10 pr-2">
+                            ${index > 0 ? `<button onclick="window.moveAccount('${acc.id}', -1)" class="p-1 text-slate-500 hover:text-blue-400 transition-all"><i data-lucide="chevron-up" class="w-3 h-3"></i></button>` : '<div class="w-5"></div>'}
+                            ${index < filtered.length - 1 ? `<button onclick="window.moveAccount('${acc.id}', 1)" class="p-1 text-slate-500 hover:text-blue-400 transition-all"><i data-lucide="chevron-down" class="w-3 h-3"></i></button>` : '<div class="w-5"></div>'}
+                        </div>
                         <button onclick="window.editAccount('${acc.id}')" class="p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                         <button onclick="window.deleteAccount('${acc.id}')" class="p-2 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
@@ -302,6 +307,28 @@ function formatDate(dateStr) {
     if (!y || !m || !d) return dateStr;
     return `${d}/${m}/${y}`;
 }
+
+window.moveAccount = async (id, direction) => {
+    const index = accounts.findIndex(a => a.id === id);
+    if (index === -1) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= accounts.length) return;
+
+    // Tráo đổi vị trí trong mảng
+    const temp = accounts[index];
+    accounts[index] = accounts[newIndex];
+    accounts[newIndex] = temp;
+
+    toggleLoading(true);
+    try {
+        await saveData();
+        render();
+    } catch (e) {
+        alert("Lỗi khi thay đổi thứ tự!");
+    } finally {
+        setTimeout(() => toggleLoading(false), 200);
+    }
+};
 
 // --- ADMIN PANEL ---
 elements.btnAdminPanel.addEventListener('click', async () => {

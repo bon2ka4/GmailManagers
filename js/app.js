@@ -135,7 +135,7 @@ function render() {
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
                         <div class="p-1.5 bg-purple-500/10 rounded-lg"><i data-lucide="cloud" class="w-3.5 h-3.5 text-purple-400"></i></div>
-                        <span class="text-sm font-medium text-slate-300">${acc.storage_total || 15} GB</span>
+                        <span class="text-sm font-medium text-slate-300">${acc.storage_total || 15} ${acc.storage_unit || 'GB'}</span>
                     </div>
                 </td>
                 <td class="px-6 py-4 text-right">

@@ -269,9 +269,18 @@ function render() {
                             <span class="font-semibold text-white">${acc.account}</span>
                             <button onclick="window.copyToClipboard('${acc.account}', this)" class="opacity-0 group-hover/item:opacity-100 hover:text-blue-400 transition-opacity"><i data-lucide="copy" class="w-3 h-3"></i></button>
                         </div>
-                        <div class="flex items-center gap-2 text-xs text-blue-400 relative" onclick="event.stopPropagation()">
-                            <span class="bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 font-mono">${acc.password}</span>
-                            <button onclick="window.copyToClipboard('${acc.password}', this)" class="hover:text-white"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                        <div class="flex items-center gap-2 text-xs relative" onclick="event.stopPropagation()">
+                            <div class="bg-slate-800 px-2 py-1 rounded border border-white/5 flex items-center gap-2 min-w-[100px]">
+                                <span id="pass-${acc.id}" class="font-mono text-slate-400">••••••••</span>
+                                <div class="flex items-center gap-1.5 ml-auto">
+                                    <button onclick="window.togglePassword('${acc.id}', '${acc.password}', this)" class="hover:text-blue-400 transition-colors text-slate-500">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="window.copyToClipboard('${acc.password}', this)" class="hover:text-emerald-400 transition-colors text-slate-500">
+                                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </td>
@@ -313,6 +322,23 @@ function checkExpiring(dateStr) {
     const today = new Date();
     return Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)) < 7;
 }
+
+window.togglePassword = (id, realPass, btn) => {
+    const span = document.getElementById(`pass-${id}`);
+    const icon = btn.querySelector('i');
+    if (span.innerText === '••••••••') {
+        span.innerText = realPass;
+        span.classList.remove('text-slate-400');
+        span.classList.add('text-blue-400');
+        icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+        span.innerText = '••••••••';
+        span.classList.remove('text-blue-400');
+        span.classList.add('text-slate-400');
+        icon.setAttribute('data-lucide', 'eye');
+    }
+    lucide.createIcons();
+};
 
 window.copyToClipboard = (text, btn) => {
     navigator.clipboard.writeText(text);

@@ -66,7 +66,6 @@ window.addEventListener('DOMContentLoaded', async () => {
             accounts = cachedData ? JSON.parse(cachedData) : [];
             
             enterApp();
-            loadData(); // Sync ngầm bản mới nhất từ Cloud
         }
     }
 });
@@ -197,13 +196,18 @@ async function loadData() {
     elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> <span>ĐANG ĐỒNG BỘ...</span>`;
     lucide.createIcons();
     try {
-        const res = await callCloud({ action: 'login', email: CURRENT_USER, otp: "DUMMY" }); // Demo mode
-        // Note: Trong thực tế, cần cơ chế session token để không phải dùng OTP lại.
-        // Ở bản này, ta coi như login xong là có data trong RAM.
-        alert("Đã đồng bộ dữ liệu mới nhất!");
-    } catch (e) { alert("Lỗi đồng bộ!"); }
-    finally { 
-        elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4"></i> ĐỒNG BỘ CLOUD`;
+        const res = await callCloud({ action: 'login', email: CURRENT_USER, otp: 'SESSION' });
+        if (res.status === "Success") {
+            accounts = res.data ? JSON.parse(res.data) : [];
+            localStorage.setItem('gmail_tool_last_data_' + CURRENT_USER, JSON.stringify(accounts));
+            render();
+            
+            // Hiện trạng thái thành công trên nút
+            elements.btnSync.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> <span class="text-emerald-400">ĐÃ ĐỒNG BỘ</span>`;
+            lucide.createIcons();
+        }
+    } catch (e) { 
+        elements.btnSync.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-500"></i> <span>LỖI SYNC</span>`;
         lucide.createIcons();
     }
 }

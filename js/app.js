@@ -85,10 +85,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 loadData();
                 return;
             }
-        } catch (e) { console.error("Auto login failed", e); }
+        } catch (e) { 
+            console.error("Auto login failed", e);
+            // Xóa rác nếu lỗi để lần sau không bị kẹt
+            localStorage.removeItem('gmail_tool_remembered_key');
+        }
     }
     
-    // Nếu không auto-login được thì hiện màn hình Login
+    // Luôn hiện màn hình Login nếu không vào được Dashboard
     elements.loginScreen.classList.remove('hidden');
 });
 

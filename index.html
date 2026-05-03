@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail Manager - Premium Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#0f172a] text-slate-200 min-h-screen overflow-x-hidden">
+    <!-- Background Decor -->
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full z-0"></div>
+
+    <div class="relative z-10 container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-10 glass p-6 rounded-2xl border border-white/10 shadow-2xl">
+            <div class="flex items-center gap-3">
+                <div class="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+                    <i data-lucide="mail" class="w-8 h-8 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Gmail Manager</h1>
+                    <p class="text-sm text-slate-400">Quản lý tài khoản chuyên nghiệp</p>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <div class="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-xl border border-slate-700">
+                    <i data-lucide="cloud" class="w-4 h-4 text-blue-400"></i>
+                    <input type="text" id="api-url" placeholder="Paste Apps Script URL here..." class="bg-transparent border-none outline-none text-xs w-64 text-slate-300">
+                </div>
+                <button id="btn-sync" class="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all border border-slate-700">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    <span>Đồng bộ</span>
+                </button>
+                <button id="btn-add" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-lg shadow-blue-600/20">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    <span>Thêm mới</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <div class="glass p-6 rounded-2xl border border-white/5 shadow-xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-blue-500/10 rounded-lg"><i data-lucide="users" class="text-blue-500"></i></div>
+                    <span class="text-xs text-slate-500">Tổng tài khoản</span>
+                </div>
+                <h3 id="stat-total" class="text-3xl font-bold">0</h3>
+            </div>
+            <div class="glass p-6 rounded-2xl border border-white/5 shadow-xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-amber-500/10 rounded-lg"><i data-lucide="alert-triangle" class="text-amber-500"></i></div>
+                    <span class="text-xs text-slate-500">Sắp hết hạn</span>
+                </div>
+                <h3 id="stat-expiring" class="text-3xl font-bold text-amber-500">0</h3>
+            </div>
+            <div class="glass p-6 rounded-2xl border border-white/5 shadow-xl md:col-span-2">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-purple-500/10 rounded-lg"><i data-lucide="database" class="text-purple-500"></i></div>
+                    <span class="text-xs text-slate-500">Dung lượng trung bình</span>
+                </div>
+                <div class="flex items-end gap-3">
+                    <h3 id="stat-storage" class="text-3xl font-bold">0%</h3>
+                    <div class="flex-1 h-3 bg-slate-800 rounded-full mb-2 overflow-hidden border border-white/5">
+                        <div id="stat-storage-bar" class="h-full bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="glass rounded-2xl border border-white/10 shadow-2xl overflow-hidden mb-10">
+            <!-- Search & Filter -->
+            <div class="p-4 border-b border-white/5 flex gap-4 bg-white/5">
+                <div class="relative flex-1">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
+                    <input type="text" id="search-input" placeholder="Tìm kiếm theo email, sđt, pass..." class="w-full bg-slate-900/50 border border-white/10 rounded-xl py-2.5 pl-12 pr-4 focus:ring-2 focus:ring-blue-600 outline-none transition-all">
+                </div>
+                <select id="filter-status" class="bg-slate-900/50 border border-white/10 rounded-xl px-4 outline-none">
+                    <option value="all">Tất cả</option>
+                    <option value="warning">Sắp hết hạn</option>
+                    <option value="normal">Hoạt động tốt</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 text-slate-400 uppercase text-xs font-semibold tracking-wider">
+                        <tr>
+                            <th class="px-6 py-4">Tài khoản</th>
+                            <th class="px-6 py-4">SĐT / Phục hồi</th>
+                            <th class="px-6 py-4">Dung lượng</th>
+                            <th class="px-6 py-4">Ngày hết hạn</th>
+                            <th class="px-6 py-4 text-right">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="account-list" class="divide-y divide-white/5">
+                        <!-- Rows will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="py-20 text-center flex flex-col items-center gap-4">
+                <div class="p-6 bg-slate-800/50 rounded-full text-slate-600">
+                    <i data-lucide="database-zap" class="w-12 h-12"></i>
+                </div>
+                <div>
+                    <h4 class="text-xl font-semibold text-slate-400">Chưa có dữ liệu</h4>
+                    <p class="text-slate-500">Mở thư mục để load data hoặc thêm tài khoản mới.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add/Edit Account -->
+    <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300">
+        <div class="glass w-full max-w-2xl mx-4 rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl font-bold">Thêm tài khoản mới</h3>
+                <button id="btn-close-modal" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="x"></i></button>
+            </div>
+            <form id="account-form" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-400">Gmail</label>
+                    <input type="email" name="account" required class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="space-y-2 relative">
+                    <label class="text-sm font-semibold text-slate-400">Password</label>
+                    <input type="text" name="password" required class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-400">Số điện thoại</label>
+                    <input type="text" name="phone" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-400">Gmail khôi phục</label>
+                    <input type="email" name="recovery_email" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-400">Gmail Auth</label>
+                    <input type="email" name="auth_email" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-400">Dung lượng gói (GB)</label>
+                    <input type="number" name="storage_total" value="15" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-400">Dung lượng đã dùng (GB)</label>
+                    <input type="number" step="0.1" name="storage_used" value="0" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-400">Ngày chôn (Ngày tạo)</label>
+                    <input type="date" name="create_date" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-slate-400">Ngày hết hạn</label>
+                    <input type="date" name="expiry_date" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
+                </div>
+                <div class="md:col-span-2 pt-4 flex gap-4">
+                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20">Lưu lại</button>
+                    <button type="button" id="btn-cancel" class="px-8 bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-bold transition-all">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Instructions Panel -->
+    <div id="cloud-info" class="fixed bottom-24 right-6 z-40 max-w-xs transition-all opacity-0 pointer-events-none">
+        <div class="glass p-4 rounded-2xl border border-blue-500/30 shadow-2xl bg-[#1e293b]/90">
+            <h4 class="text-sm font-bold text-blue-400 mb-2 flex items-center gap-2">
+                <i data-lucide="info" class="w-4 h-4"></i> Hướng dẫn Cloud
+            </h4>
+            <ol class="text-[10px] text-slate-400 space-y-1 list-decimal pl-4">
+                <li>Tạo Google Sheet mới.</li>
+                <li>Vào <b>Extensions > Apps Script</b>.</li>
+                <li>Dán code trong <code>cloud/backend.js</code>.</li>
+                <li>Nhấn <b>Deploy > New Deployment</b>.</li>
+                <li>Chọn type <b>Web App</b>, access <b>Anyone</b>.</li>
+                <li>Copy URL dán vào ô Cloud bên trên.</li>
+            </ol>
+        </div>
+    </div>
+
+    <button id="btn-info" class="fixed bottom-6 right-6 z-50 p-3 bg-blue-600 rounded-full shadow-lg hover:scale-110 transition-transform">
+        <i data-lucide="help-circle" class="text-white"></i>
+    </button>
+
+    <script src="js/app.js" type="module"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -300,8 +300,8 @@ function render() {
                     <div class="flex items-center justify-center gap-2" onclick="event.stopPropagation()">
                         <!-- Nút Di chuyển -->
                         <div class="flex flex-col gap-1 mr-2 border-r border-white/10 pr-2">
-                            ${index > 0 ? `<button onclick="window.moveAccount('${acc.id}', -1)" class="p-1 text-blue-400 hover:text-white hover:bg-blue-600 rounded transition-all"><i data-lucide="arrow-up" class="w-3 h-3"></i></button>` : '<div class="w-5 h-5"></div>'}
-                            ${index < filtered.length - 1 ? `<button onclick="window.moveAccount('${acc.id}', 1)" class="p-1 text-blue-400 hover:text-white hover:bg-blue-600 rounded transition-all"><i data-lucide="arrow-down" class="w-3 h-3"></i></button>` : '<div class="w-5 h-5"></div>'}
+                            ${index > 0 ? `<button onclick="window.moveAccount('${acc.id}', -1)" class="w-8 h-8 flex items-center justify-center bg-blue-500/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-all border border-blue-500/20" title="Di chuyển lên"><i data-lucide="chevron-up" class="w-5 h-5"></i></button>` : '<div class="w-8 h-8"></div>'}
+                            ${index < filtered.length - 1 ? `<button onclick="window.moveAccount('${acc.id}', 1)" class="w-8 h-8 flex items-center justify-center bg-blue-500/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-all border border-blue-500/20" title="Di chuyển xuống"><i data-lucide="chevron-down" class="w-5 h-5"></i></button>` : '<div class="w-8 h-8"></div>'}
                         </div>
                         <button onclick="window.editAccount('${acc.id}')" class="p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                         <button onclick="window.deleteAccount('${acc.id}')" class="p-2 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>

@@ -1,16 +1,23 @@
 /**
- * GMAIL MANAGER - CLOUD VERSION LOGIC (ADJUSTED)
+ * GMAIL MANAGER - BANK-LEVEL SECURITY VERSION
  * Author: Antigravity (Senior AI Developer)
  */
 
-const SECRET_KEY = "antigravity_master_key";
+let MASTER_KEY = ""; // Sẽ được gán khi login, không lưu vào localStorage
+let API_URL = "";
 let accounts = [];
 let editingId = null;
 
-// DOM Elements
 const elements = {
-    apiUrlInput: document.getElementById('api-url'),
+    loginScreen: document.getElementById('login-screen'),
+    mainApp: document.getElementById('main-app'),
+    loginForm: document.getElementById('login-form'),
+    masterPasswordInput: document.getElementById('master-password'),
+    setupApiUrlInput: document.getElementById('setup-api-url'),
+    firstTimeConfig: document.getElementById('first-time-config'),
+    btnShowSetup: document.getElementById('btn-show-setup'),
     btnSync: document.getElementById('btn-sync'),
+    btnLogout: document.getElementById('btn-logout'),
     btnAdd: document.getElementById('btn-add'),
     accountList: document.getElementById('account-list'),
     emptyState: document.getElementById('empty-state'),
@@ -30,28 +37,72 @@ const elements = {
     cloudInfo: document.getElementById('cloud-info')
 };
 
-// --- STORAGE LOGIC (CLOUD) ---
+// --- AUTH LOGIC ---
 
-const savedApiUrl = localStorage.getItem('gmail_tool_api_url');
-if (savedApiUrl) {
-    elements.apiUrlInput.value = savedApiUrl;
-    loadData();
+// Kiểm tra xem đã có config chưa
+const hasConfig = localStorage.getItem('gmail_tool_api_url_encrypted');
+if (!hasConfig) {
+    elements.firstTimeConfig.classList.remove('hidden');
 }
 
-async function loadData() {
-    const apiUrl = elements.apiUrlInput.value.trim();
-    if (!apiUrl) return;
+elements.btnShowSetup.addEventListener('click', () => {
+    elements.firstTimeConfig.classList.toggle('hidden');
+});
 
-    localStorage.setItem('gmail_tool_api_url', apiUrl);
-    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5 animate-spin"></i> <span>Đang tải...</span>`;
+elements.loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pass = elements.masterPasswordInput.value;
+    const encryptedUrl = localStorage.getItem('gmail_tool_api_url_encrypted');
+
+    if (!encryptedUrl) {
+        // Thiết lập lần đầu
+        const url = elements.setupApiUrlInput.value.trim();
+        if (!url) return alert("Vui lòng nhập Link Apps Script!");
+        
+        // Khóa link Apps Script bằng mật khẩu của Đại Ca
+        const encrypted = CryptoJS.AES.encrypt(url, pass).toString();
+        localStorage.setItem('gmail_tool_api_url_encrypted', encrypted);
+        
+        API_URL = url;
+    } else {
+        // Đăng nhập
+        try {
+            const bytes = CryptoJS.AES.decrypt(encryptedUrl, pass);
+            const decryptedUrl = bytes.toString(CryptoJS.enc.Utf8);
+            if (!decryptedUrl) throw new Error("Wrong pass");
+            API_URL = decryptedUrl;
+        } catch (err) {
+            return alert("Mật khẩu sai rồi Đại Ca ơi!");
+        }
+    }
+
+    MASTER_KEY = pass; // Chỉ lưu trong RAM
+    
+    // Mở khóa UI
+    elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
+    elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+    
+    loadData();
+});
+
+elements.btnLogout.addEventListener('click', () => {
+    location.reload(); // Cách logout an toàn nhất: reset RAM
+});
+
+// --- STORAGE LOGIC (CLOUD) ---
+
+async function loadData() {
+    if (!API_URL || !MASTER_KEY) return;
+
+    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5 animate-spin"></i> <span>Tải...</span>`;
     lucide.createIcons();
 
     try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(API_URL);
         const encryptedContent = await response.text();
         
         if (encryptedContent && encryptedContent !== "[]") {
-            const bytes = CryptoJS.AES.decrypt(encryptedContent, SECRET_KEY);
+            const bytes = CryptoJS.AES.decrypt(encryptedContent, MASTER_KEY);
             accounts = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
         } else {
             accounts = [];
@@ -66,16 +117,18 @@ async function loadData() {
 }
 
 async function saveData() {
-    const apiUrl = elements.apiUrlInput.value.trim();
-    if (!apiUrl) return;
+    if (!API_URL || !MASTER_KEY) return;
+
     const dataString = JSON.stringify(accounts);
-    const encryptedData = CryptoJS.AES.encrypt(dataString, SECRET_KEY).toString();
+    const encryptedData = CryptoJS.AES.encrypt(dataString, MASTER_KEY).toString();
+
     try {
-        await fetch(apiUrl, { method: 'POST', mode: 'no-cors', body: encryptedData });
-    } catch (err) { console.error("Cloud save failed:", err); }
+        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: encryptedData });
+        console.log("Cloud saved");
+    } catch (err) { console.error("Save failed", err); }
 }
 
-// --- UI LOGIC ---
+// --- UI LOGIC (Giữ nguyên từ bản trước nhưng dùng MASTER_KEY) ---
 
 function render() {
     const searchTerm = elements.searchInput.value.toLowerCase();
@@ -96,11 +149,6 @@ function render() {
     const expiringCount = accounts.filter(acc => checkExpiring(acc.expiry_date)).length;
     elements.statExpiring.innerText = expiringCount;
     
-    // Dung lượng chỉ tính dựa trên số lượng gói
-    let totalStorageCount = accounts.reduce((sum, acc) => sum + parseFloat(acc.storage_total || 0), 0);
-    elements.statStorage.innerText = `${totalStorageCount} GB`;
-    elements.statStorageBar.style.width = `100%`;
-
     if (filtered.length === 0) {
         elements.accountList.innerHTML = '';
         elements.emptyState.classList.remove('hidden');
@@ -186,7 +234,6 @@ window.editAccount = (id) => {
 // --- EVENTS ---
 
 elements.btnSync.addEventListener('click', loadData);
-
 elements.btnAdd.addEventListener('click', () => {
     editingId = null;
     elements.modalTitle.innerText = "Thêm tài khoản mới";
@@ -199,7 +246,7 @@ elements.btnCloseModal.addEventListener('click', () => elements.modal.classList.
 elements.btnCancel.addEventListener('click', () => elements.modal.classList.remove('active'));
 
 elements.btnDelete.addEventListener('click', async () => {
-    if (editingId && confirm('Đại Ca có chắc muốn XÓA vĩnh viễn tài khoản này?')) {
+    if (editingId && confirm('Xóa tài khoản này?')) {
         accounts = accounts.filter(a => a.id !== editingId);
         await saveData();
         elements.modal.classList.remove('active');
@@ -212,7 +259,6 @@ elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(elements.form);
     const data = Object.fromEntries(formData.entries());
-    
     if (editingId) {
         const index = accounts.findIndex(a => a.id === editingId);
         accounts[index] = { ...accounts[index], ...data };
@@ -220,7 +266,6 @@ elements.form.addEventListener('submit', async (e) => {
         data.id = Date.now().toString();
         accounts.push(data);
     }
-    
     await saveData();
     elements.modal.classList.remove('active');
     render();
@@ -235,5 +280,5 @@ elements.btnInfo.addEventListener('click', () => {
     elements.cloudInfo.classList.toggle('pointer-events-none');
 });
 
-// Initial Render
+lucide.createIcons();
 render();

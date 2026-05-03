@@ -18,7 +18,32 @@
     <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full z-0"></div>
     <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full z-0"></div>
 
-    <div class="relative z-10 container mx-auto px-4 py-8">
+    <div id="login-screen" class="fixed inset-0 bg-[#0f172a] z-[100] flex items-center justify-center transition-all duration-500">
+        <div class="glass p-10 rounded-[40px] border border-white/10 shadow-2xl w-full max-w-md text-center">
+            <div class="w-20 h-20 bg-blue-600 rounded-3xl shadow-lg shadow-blue-600/30 flex items-center justify-center mx-auto mb-8">
+                <i data-lucide="shield-check" class="w-10 h-10 text-white"></i>
+            </div>
+            <h2 class="text-3xl font-bold mb-2">Hệ thống bảo mật</h2>
+            <p class="text-slate-400 text-sm mb-8">Vui lòng nhập mật khẩu quản trị để truy cập</p>
+            
+            <form id="login-form" class="space-y-4">
+                <div class="relative">
+                    <i data-lucide="lock" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
+                    <input type="password" id="master-password" placeholder="Mật khẩu của Đại Ca..." required class="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-600 transition-all text-center tracking-[0.5em]">
+                </div>
+                
+                <div id="first-time-config" class="hidden animate-fadeIn py-4 border-t border-white/5 mt-4 text-left">
+                    <label class="text-xs font-bold text-blue-400 uppercase mb-2 block">Cấu hình Cloud (Lần đầu)</label>
+                    <input type="text" id="setup-api-url" placeholder="Dán link Apps Script tại đây..." class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-xs outline-none">
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95">MỞ KHÓA HỆ THỐNG</button>
+            </form>
+            <button id="btn-show-setup" class="text-xs text-slate-500 mt-6 hover:text-blue-400 transition-colors">Thiết lập lại Cloud URL</button>
+        </div>
+    </div>
+
+    <div class="relative z-10 container mx-auto px-4 py-8 blur-xl opacity-0 transition-all duration-700" id="main-app">
         <!-- Header -->
         <header class="flex justify-between items-center mb-10 glass p-6 rounded-2xl border border-white/10 shadow-2xl">
             <div class="flex items-center gap-3">
@@ -31,13 +56,12 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <div class="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-xl border border-slate-700">
-                    <i data-lucide="cloud" class="w-4 h-4 text-blue-400"></i>
-                    <input type="text" id="api-url" placeholder="Paste Apps Script URL here..." class="bg-transparent border-none outline-none text-xs w-64 text-slate-300">
-                </div>
+                <button id="btn-logout" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all border border-slate-700 text-slate-400 hover:text-white">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
                 <button id="btn-sync" class="flex items-center gap-2 px-5 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all border border-slate-700">
                     <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                    <span>Đồng bộ</span>
+                    <span>Làm mới</span>
                 </button>
                 <button id="btn-add" class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-lg shadow-blue-600/20">
                     <i data-lucide="plus" class="w-5 h-5"></i>

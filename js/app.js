@@ -314,6 +314,16 @@ function render() {
                         <span class="text-[10px] text-slate-500">Chôn: ${acc.create_date || 'N/A'}</span>
                     </div>
                 </td>
+                <td class="px-6 py-4 text-center">
+                    <div class="flex items-center justify-center gap-2" onclick="event.stopPropagation()">
+                        <button onclick="window.editAccount('${acc.id}')" class="p-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white rounded-lg transition-all" title="Sửa">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="window.deleteAccountDirect('${acc.id}')" class="p-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all" title="Xóa">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </td>
             </tr>
         `).join('');
         lucide.createIcons();
@@ -362,6 +372,14 @@ window.editAccount = (id) => {
     elements.btnDelete.classList.remove('hidden');
     for (let key in acc) { if (elements.form[key]) elements.form[key].value = acc[key]; }
     elements.modal.classList.add('active');
+};
+
+window.deleteAccountDirect = async (id) => {
+    if (confirm('Xóa tài khoản này?')) {
+        accounts = accounts.filter(a => a.id !== id);
+        await saveData();
+        render();
+    }
 };
 
 elements.btnSync.addEventListener('click', loadData);

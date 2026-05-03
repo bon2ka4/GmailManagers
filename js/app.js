@@ -52,7 +52,7 @@ function toggleLoading(show) {
 let API_URL = localStorage.getItem('gmail_tool_api_url') || "";
 
 let CURRENT_USER = localStorage.getItem('gmail_tool_user') || "";
-let IS_ADMIN = false;
+let IS_ADMIN = sessionStorage.getItem('gmail_tool_is_admin') === 'true';
 let accounts = [];
 let authMode = "login"; // login or register
 let isOtpSent = false;
@@ -76,11 +76,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (!API_URL) {
         elements.setupModal.classList.remove('hidden');
     } else {
-        const sessionUser = sessionStorage.getItem('gmail_tool_user');
         const isSessionActive = sessionStorage.getItem('gmail_tool_session_active') === 'true';
-        
-        if (sessionUser && isSessionActive) {
-            CURRENT_USER = sessionUser;
+        if (isSessionActive) {
             IS_ADMIN = sessionStorage.getItem('gmail_tool_is_admin') === 'true';
             const cachedData = localStorage.getItem('gmail_tool_last_data_' + CURRENT_USER);
             accounts = cachedData ? JSON.parse(cachedData) : [];

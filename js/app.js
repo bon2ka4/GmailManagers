@@ -6,6 +6,7 @@ const elements = {
     rememberMe: document.getElementById('remember-me'),
     btnShowSetup: document.getElementById('btn-show-setup'),
     setupApiUrlInput: document.getElementById('setup-api-url'),
+    firstTimeConfig: document.getElementById('first-time-config'),
     
     recoveryModal: document.getElementById('recovery-modal'),
     displayRecoveryToken: document.getElementById('display-recovery-token'),
@@ -50,6 +51,13 @@ let editingId = null;
 
 // --- INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', () => {
+    const encryptedUrl = localStorage.getItem('gmail_tool_api_url_encrypted');
+    
+    // Nếu chưa cài đặt cloud, hiện ô setup
+    if (!encryptedUrl) {
+        elements.firstTimeConfig.classList.remove('hidden');
+    }
+
     if (document.documentElement.classList.contains('is-logged-in')) {
         const rememberedKey = localStorage.getItem('gmail_tool_remembered_key');
         const encryptedUrl = localStorage.getItem('gmail_tool_api_url_encrypted');

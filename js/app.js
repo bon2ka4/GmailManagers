@@ -137,8 +137,26 @@ elements.btnConfirmRecovery.addEventListener('click', async () => {
     document.documentElement.classList.add('is-logged-in');
     elements.loginScreen.classList.add('opacity-0', 'pointer-events-none', 'hidden');
     elements.mainApp.classList.remove('hidden');
-    setTimeout(() => elements.mainApp.classList.remove('blur-xl', 'opacity-0'), 50);
+    setTimeout(() => {
+        elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+    }, 50);
+    
+    // Lưu bản ghi đầu tiên kèm metadata
     await saveData();
+    
+    // TỰ ĐỘNG GỬI MAIL LẦN ĐẦU (Chỉ chạy khi vừa sinh token mới)
+    if (CURRENT_RECOVERY_TOKEN) {
+        const email = localStorage.getItem('gmail_tool_remembered_email') || elements.loginEmail.value;
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'request_recovery', email: email })
+            });
+            console.log("Welcome email sent automatically.");
+        } catch (e) { console.error("Failed to send welcome email", e); }
+        CURRENT_RECOVERY_TOKEN = ""; // Reset để không gửi lại nữa
+    }
+
     loadData();
 });
 

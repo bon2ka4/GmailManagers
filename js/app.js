@@ -181,7 +181,7 @@ elements.forgotForm.addEventListener('submit', async (e) => {
 
 async function loadData() {
     if (!API_URL || !MASTER_KEY) return;
-    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5 animate-spin"></i> <span>Tải...</span>`;
+    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5 animate-spin"></i> <span>Đang tải...</span>`;
     try {
         const response = await fetch(API_URL);
         const encryptedContent = await response.text();

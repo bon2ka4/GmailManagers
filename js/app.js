@@ -60,6 +60,18 @@ let editingId = null;
 // --- INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.lucide) lucide.createIcons();
+
+    // Thêm logic tự động chèn dấu gạch cho ô ngày
+    document.querySelectorAll('.date-mask').forEach(input => {
+        input.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 8) v = v.substring(0, 8);
+            if (v.length > 4) v = v.substring(0, 2) + '/' + v.substring(2, 4) + '/' + v.substring(4);
+            else if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2);
+            e.target.value = v;
+        });
+    });
+
     if (!API_URL) {
         elements.setupModal.classList.remove('hidden');
     } else {
@@ -389,7 +401,17 @@ window.editAccount = (id) => {
     editingId = id;
     elements.modalTitle.innerText = "CHỈNH SỬA GMAIL";
     elements.btnDelete.classList.remove('hidden');
-    for (let key in acc) { if (elements.form[key]) elements.form[key].value = acc[key]; }
+    
+    for (let key in acc) { 
+        if (elements.form[key]) {
+            let val = acc[key];
+            // Nếu là trường ngày, format lại sang dd/mm/yyyy để hiện thị
+            if ((key === 'expiry_date' || key === 'burial_date') && val) {
+                val = formatDate(val);
+            }
+            elements.form[key].value = val; 
+        } 
+    }
     elements.modal.classList.add('active-modal');
 };
 
@@ -407,7 +429,13 @@ elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
     toggleLoading(true); // Hiện mờ toàn web
     try {
-        const data = Object.fromEntries(new FormData(elements.form).entries());
+        const formData = new FormData(elements.form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Chuyển đổi dd/mm/yyyy ngược lại yyyy-mm-dd trước khi lưu
+        if (data.expiry_date) data.expiry_date = convertToISO(data.expiry_date);
+        if (data.burial_date) data.burial_date = convertToISO(data.burial_date);
+
         if (editingId) {
             const idx = accounts.findIndex(a => a.id === editingId);
             accounts[idx] = { ...accounts[idx], ...data };
@@ -425,6 +453,13 @@ elements.form.addEventListener('submit', async (e) => {
         setTimeout(() => toggleLoading(false), 300);
     }
 });
+
+function convertToISO(dateStr) {
+    if (!dateStr || !dateStr.includes('/')) return dateStr;
+    const [d, m, y] = dateStr.split('/');
+    if (!d || !m || !y) return dateStr;
+    return `${y}-${m}-${d}`;
+}
 
 window.deleteAccount = async (id) => {
     const acc = accounts.find(a => a.id === id);

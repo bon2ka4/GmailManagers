@@ -278,7 +278,7 @@ function render() {
                                 <span id="pass-${acc.id}" class="font-mono text-slate-400">••••••••</span>
                                 <div class="flex items-center gap-1.5 ml-auto">
                                     <button onclick="window.togglePassword('${acc.id}', '${acc.password}', this)" class="hover:text-blue-400 transition-colors text-slate-500">
-                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                        <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
                                     </button>
                                     <button onclick="window.copyToClipboard('${acc.password}', this)" class="hover:text-emerald-400 transition-colors text-slate-500">
                                         <i data-lucide="copy" class="w-3.5 h-3.5"></i>
@@ -334,12 +334,12 @@ window.togglePassword = (id, realPass, btn) => {
         span.innerText = realPass;
         span.classList.remove('text-slate-400');
         span.classList.add('text-blue-400');
-        icon.setAttribute('data-lucide', 'eye-off');
+        icon.setAttribute('data-lucide', 'eye'); // Hiện pass thì hiện mắt thường
     } else {
         span.innerText = '••••••••';
         span.classList.remove('text-blue-400');
         span.classList.add('text-slate-400');
-        icon.setAttribute('data-lucide', 'eye');
+        icon.setAttribute('data-lucide', 'eye-off'); // Ẩn pass thì hiện mắt gạch chéo
     }
     lucide.createIcons();
 };

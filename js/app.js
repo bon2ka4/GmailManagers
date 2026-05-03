@@ -50,6 +50,20 @@ const elements = {
     cloudInfo: document.getElementById('cloud-info')
 };
 
+// --- AUTH LOGIC ---
+
+// Kiểm tra xem đã có config chưa
+const hasConfig = localStorage.getItem('gmail_tool_api_url_encrypted');
+if (hasConfig) {
+    elements.firstTimeConfig.classList.add('hidden');
+} else {
+    elements.firstTimeConfig.classList.remove('hidden');
+}
+
+elements.btnShowSetup.addEventListener('click', () => {
+    elements.firstTimeConfig.classList.toggle('hidden');
+});
+
 // --- AUTH UTILS ---
 
 function deriveKey(email, pass) {

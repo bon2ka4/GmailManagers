@@ -204,8 +204,19 @@ function enterApp() {
     elements.authScreen.classList.add('hidden');
     elements.syncScreen.classList.remove('hidden');
     elements.userDisplay.innerHTML = `Chào Đại Ca, <span class="text-blue-400 font-bold">${CURRENT_USER}</span>`;
-    if (IS_ADMIN) elements.btnAdminPanel.classList.remove('hidden');
-    else elements.btnAdminPanel.classList.add('hidden');
+    
+    // MASTER OVERRIDE: Đại Ca luôn là Admin
+    if (CURRENT_USER === "bon1998.canhan@gmail.com") {
+        IS_ADMIN = true;
+        sessionStorage.setItem('gmail_tool_is_admin', 'true');
+    }
+
+    if (IS_ADMIN) {
+        elements.btnAdminPanel.classList.remove('hidden');
+        console.log("Admin Panel Activated for:", CURRENT_USER);
+    } else {
+        elements.btnAdminPanel.classList.add('hidden');
+    }
     loadData();
 }
 

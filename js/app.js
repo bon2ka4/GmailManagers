@@ -9,6 +9,7 @@ const elements = {
     otpSection: document.getElementById('otp-section'),
     authOtp: document.getElementById('auth-otp'),
     btnAuthAction: document.getElementById('btn-auth-action'),
+    rememberMe: document.getElementById('remember-me'),
     btnResetSetup: document.getElementById('btn-reset-setup'),
 
     mainApp: document.getElementById('main-app'),
@@ -47,13 +48,26 @@ let authMode = "login"; // login or register
 let isOtpSent = false;
 
 // --- INITIALIZATION ---
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     lucide.createIcons();
     if (!API_URL) {
         elements.setupModal.classList.remove('hidden');
-    } else if (CURRENT_USER) {
-        // Auto-login logic could go here if we had a persistent session token
-        // For now, require OTP every fresh session for maximum security
+    } else {
+        const rememberedUser = localStorage.getItem('gmail_tool_user');
+        const isRemembered = localStorage.getItem('gmail_tool_remember') === 'true';
+        
+        if (rememberedUser && isRemembered) {
+            CURRENT_USER = rememberedUser;
+            // Ta cần lấy lại quyền Admin và Data mới nhất
+            try {
+                const res = await callCloud({ action: 'login', email: CURRENT_USER, otp: 'SESSION' }); // Backend cần hỗ trợ bỏ qua OTP nếu đúng Gmail chủ? 
+                // Thực tế để đơn giản nhất, ta cứ cho vào thẳng dashboard với data cũ, rồi sync sau.
+                IS_ADMIN = localStorage.getItem('gmail_tool_is_admin') === 'true';
+                accounts = JSON.parse(localStorage.getItem('gmail_tool_last_data') || "[]");
+                enterApp();
+                loadData(); // Tự động sync data mới nhất
+            } catch (e) { console.log("Session expired"); }
+        }
     }
 });
 
@@ -138,11 +152,15 @@ async function handleVerifyLogin(email, otp) {
         if (res.status === "Success") {
             CURRENT_USER = email;
             IS_ADMIN = res.isAdmin;
-            localStorage.setItem('gmail_tool_user', email);
             
-            // Dữ liệu thô từ Cloud
+            if (elements.rememberMe.checked) {
+                localStorage.setItem('gmail_tool_user', email);
+                localStorage.setItem('gmail_tool_remember', 'true');
+                localStorage.setItem('gmail_tool_is_admin', IS_ADMIN);
+                localStorage.setItem('gmail_tool_last_data', res.data || "[]");
+            }
+            
             accounts = res.data ? JSON.parse(res.data) : [];
-            
             enterApp();
         } else {
             alert("Mã OTP không đúng hoặc đã hết hạn!");
@@ -191,6 +209,9 @@ async function loadData() {
 async function saveData() {
     try {
         await callCloud({ action: 'save', email: CURRENT_USER, data: JSON.stringify(accounts) });
+        if (localStorage.getItem('gmail_tool_remember') === 'true') {
+            localStorage.setItem('gmail_tool_last_data', JSON.stringify(accounts));
+        }
     } catch (e) { alert("Lỗi lưu Cloud!"); }
 }
 

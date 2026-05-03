@@ -270,12 +270,12 @@ function render() {
                 </td>
                 <td class="px-6 py-4 text-right">
                     <span class="px-2 py-1 rounded-lg text-[10px] font-black ${acc.burial_date ? 'bg-slate-500/10 text-slate-400' : 'bg-blue-500/10 text-blue-400'}">
-                        ${acc.burial_date || 'VĨNH VIỄN'}
+                        ${acc.burial_date ? formatDate(acc.burial_date) : 'VĨNH VIỄN'}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
                     <span class="px-2 py-1 rounded-lg text-[10px] font-black ${checkExpiring(acc.expiry_date) ? 'bg-amber-500/10 text-amber-500' : (acc.expiry_date ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-400')}">
-                        ${acc.expiry_date || 'VĨNH VIỄN'}
+                        ${acc.expiry_date ? formatDate(acc.expiry_date) : 'VĨNH VIỄN'}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-center">
@@ -294,6 +294,13 @@ function checkExpiring(date) {
     if (!date) return false;
     const diff = (new Date(date) - new Date()) / (1000 * 60 * 60 * 24);
     return diff >= 0 && diff < 7;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    const [y, m, d] = dateStr.split('-');
+    if (!y || !m || !d) return dateStr;
+    return `${d}/${m}/${y}`;
 }
 
 // --- ADMIN PANEL ---

@@ -529,6 +529,77 @@ window.deleteAccount = async (id) => {
     }
 };
 
+// --- ADMIN PANEL LOGIC ---
+window.openAdminPanel = async () => {
+    elements.adminModal.classList.remove('pointer-events-none', 'opacity-0');
+    elements.adminModal.classList.add('opacity-100');
+    elements.adminModal.querySelector('.glass').classList.remove('scale-95');
+    
+    elements.adminUserList.innerHTML = '<tr><td colspan="4" class="text-center py-10 opacity-50 animate-pulse text-xs tracking-widest uppercase font-black text-white">Đang tải danh sách...</td></tr>';
+    
+    try {
+        const users = await callCloud({ action: 'admin_get_users', admin_email: CURRENT_USER });
+        if (Array.isArray(users)) {
+            elements.adminUserList.innerHTML = users.map(u => {
+                const isSuper = u.email === "bon1998.canhan@gmail.com";
+                return `
+                <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-all">
+                    <td class="px-6 py-5">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white text-sm">${u.email}</span>
+                            ${isSuper ? '<span class="bg-amber-500 text-[10px] px-2 py-0.5 rounded font-black text-slate-900 uppercase">Admin</span>' : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-5 text-slate-400 text-xs">${new Date(u.joinDate).toLocaleDateString('vi-VN')}</td>
+                    <td class="px-6 py-5">
+                        <span class="px-2 py-1 rounded-lg text-[10px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase tracking-widest">${u.status}</span>
+                    </td>
+                    <td class="px-6 py-5 text-center">
+                        ${isSuper ? '<span class="text-slate-700 text-xs">-</span>' : `
+                            <button onclick="window.adminDeleteUser('${u.email}')" class="p-2 bg-rose-500/10 text-rose-500 rounded-lg hover:bg-rose-600 hover:text-white transition-all">
+                                <i data-lucide="user-minus" class="w-4 h-4"></i>
+                            </button>
+                        `}
+                    </td>
+                </tr>`;
+            }).join('');
+            if (window.lucide) lucide.createIcons();
+        }
+    } catch (e) {
+        elements.adminUserList.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-rose-500 font-bold">Lỗi tải dữ liệu từ Cloud!</td></tr>';
+    }
+};
+
+window.adminDeleteUser = async (targetEmail) => {
+    if (!confirm(`Đại Ca có chắc chắn muốn XÓA VĨNH VIỄN người dùng ${targetEmail}?\nToàn bộ dữ liệu Gmail của người này cũng sẽ bị xóa sạch!`)) return;
+    
+    try {
+        toggleLoading(true);
+        const res = await callCloud({ 
+            action: 'admin_delete_user', 
+            admin_email: CURRENT_USER, 
+            target_email: targetEmail 
+        });
+        
+        if (res === "Success") {
+            alert("Đã xong! Người dùng này đã 'bay màu' khỏi hệ thống.");
+            window.openAdminPanel(); // Refresh lại danh sách ngay lập tức
+        } else {
+            alert("Lỗi: " + res);
+        }
+    } catch (e) {
+        alert("Lỗi kết nối khi xóa user!");
+    } finally {
+        toggleLoading(false);
+    }
+};
+
+elements.btnAdminPanel.addEventListener('click', window.openAdminPanel);
+elements.btnCloseAdmin.addEventListener('click', () => {
+    elements.adminModal.classList.add('pointer-events-none', 'opacity-0');
+    elements.adminModal.querySelector('.glass').classList.add('scale-95');
+});
+
 const handleLogout = () => {
     sessionStorage.clear();
     localStorage.removeItem('gmail_tool_user');

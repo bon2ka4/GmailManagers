@@ -364,9 +364,12 @@ elements.btnSync.addEventListener('click', loadData);
 elements.searchInput.addEventListener('input', render);
 
 elements.btnLogout.addEventListener('click', () => {
+    // Xóa sạch mọi dấu vết
     sessionStorage.clear();
     localStorage.removeItem('gmail_tool_user');
-    location.reload();
+    
+    // Ép quay về trang chủ (xóa bỏ cả query string nếu có)
+    window.location.href = window.location.origin + window.location.pathname;
 });
 
 // --- CLOUD SETUP ---

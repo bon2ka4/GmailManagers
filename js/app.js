@@ -172,13 +172,19 @@ async function handleVerifyLogin(email, otp) {
             CURRENT_USER = email;
             IS_ADMIN = res.isAdmin;
             
+            // Luôn lưu vào Session để Sync hoạt động trong phiên này
+            sessionStorage.setItem('gmail_tool_user', email);
+            sessionStorage.setItem('gmail_tool_otp', otp);
+            sessionStorage.setItem('gmail_tool_session_active', 'true');
+            sessionStorage.setItem('gmail_tool_is_admin', IS_ADMIN);
+
+            // Chỉ lưu vào Local nếu chọn Ghi nhớ (để tự điền email lần sau)
             if (elements.rememberMe.checked) {
-                sessionStorage.setItem('gmail_tool_user', email);
-                sessionStorage.setItem('gmail_tool_otp', otp); // Lưu lại mã để Sync
-                sessionStorage.setItem('gmail_tool_session_active', 'true');
-                sessionStorage.setItem('gmail_tool_is_admin', IS_ADMIN);
-                localStorage.setItem('gmail_tool_last_data_' + email, res.data || "[]");
+                localStorage.setItem('gmail_tool_user', email);
             }
+            
+            // Cập nhật cache dữ liệu mới nhất
+            localStorage.setItem('gmail_tool_last_data_' + email, res.data || "[]");
             
             accounts = res.data ? JSON.parse(res.data) : [];
             enterApp();

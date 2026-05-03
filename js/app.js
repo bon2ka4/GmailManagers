@@ -179,6 +179,7 @@ function enterApp() {
     else elements.btnAdminPanel.classList.add('hidden');
     
     render();
+    loadData(); // Tự động đồng bộ ngay khi vào Dashboard
 }
 
 // --- DATA LOGIC ---

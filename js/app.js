@@ -254,17 +254,27 @@ function render() {
     } else {
         elements.emptyState.classList.add('hidden');
         elements.accountList.innerHTML = filtered.map(acc => `
-            <tr class="admin-row transition-all cursor-pointer group" onclick="window.editAccount('${acc.id}')">
+            <tr class="admin-row transition-all group border-b border-white/5 hover:bg-white/[0.02]">
                 <td class="px-6 py-4">
-                    <div class="font-bold text-white">${acc.account}</div>
-                    <div class="flex items-center gap-2 mt-1">
+                    <div class="flex items-center gap-2 group/item">
+                        <div class="font-bold text-white">${acc.account}</div>
+                        <button onclick="event.stopPropagation(); window.copyText('${acc.account}', 'Gmail')" class="opacity-0 group-hover/item:opacity-100 text-slate-500 hover:text-blue-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                    </div>
+                    <div class="flex items-center gap-2 mt-1 group/item">
                         <span id="pass-${acc.id}" class="text-xs font-mono text-slate-500">••••••••</span>
                         <button onclick="event.stopPropagation(); window.togglePassword('${acc.id}', '${acc.password}', this)" class="text-slate-600 hover:text-blue-400"><i data-lucide="eye-off" class="w-3 h-3"></i></button>
+                        <button onclick="event.stopPropagation(); window.copyText('${acc.password}', 'Mật khẩu')" class="opacity-0 group-hover/item:opacity-100 text-slate-500 hover:text-blue-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>
                     </div>
                 </td>
                 <td class="px-6 py-4 text-xs text-slate-400">
-                    <div>${acc.phone || 'N/A'}</div>
-                    <div class="text-[10px] opacity-50">${acc.recovery_email || ''}</div>
+                    <div class="flex items-center gap-2 group/item">
+                        <span>${acc.phone || 'N/A'}</span>
+                        ${acc.phone ? `<button onclick="event.stopPropagation(); window.copyText('${acc.phone}', 'SĐT')" class="opacity-0 group-hover/item:opacity-100 text-slate-500 hover:text-emerald-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>` : ''}
+                    </div>
+                    <div class="flex items-center gap-2 text-[10px] opacity-50 group/item">
+                        <span>${acc.recovery_email || ''}</span>
+                        ${acc.recovery_email ? `<button onclick="event.stopPropagation(); window.copyText('${acc.recovery_email}', 'Mail khôi phục')" class="opacity-0 group-hover/item:opacity-100 text-slate-500 hover:text-emerald-400 transition-all"><i data-lucide="copy" class="w-3 h-3"></i></button>` : ''}
+                    </div>
                 </td>
                 <td class="px-6 py-4">
                     <span class="text-xs font-bold text-slate-300">${acc.storage_value || 15} ${acc.storage_unit || 'GB'}</span>
@@ -340,6 +350,18 @@ window.togglePassword = (id, pass, btn) => {
     span.classList.toggle('text-blue-400', isHidden);
     btn.innerHTML = `<i data-lucide="${isHidden ? 'eye' : 'eye-off'}" class="w-3 h-3"></i>`;
     lucide.createIcons();
+};
+
+window.copyText = (text, label) => {
+    navigator.clipboard.writeText(text).then(() => {
+        // Tạo toast thông báo nhanh
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-2xl text-xs font-bold shadow-2xl z-[500] fade-in flex items-center gap-2 border border-white/20';
+        toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> ĐÃ CHÉP ${label.toUpperCase()}!`;
+        document.body.appendChild(toast);
+        lucide.createIcons();
+        setTimeout(() => toast.remove(), 2000);
+    });
 };
 
 window.editAccount = (id) => {

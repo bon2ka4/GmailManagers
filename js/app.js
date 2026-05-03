@@ -114,11 +114,12 @@ async function handleRegister(email) {
             authMode = "login"; // Chuyển ngầm sang login để handleRequestOtp hoạt động đúng
             await handleRequestOtp(email);
         } else if (res === "AlreadyRegistered") {
+            resetAuthButton();
             alert("Gmail này đã đăng ký rồi Đại Ca ơi! Hãy quay lại tab Login.");
             switchAuthMode("login");
         } else {
-            alert("Lỗi: " + res);
             resetAuthButton();
+            alert("Lỗi: " + res);
         }
     } catch (err) { 
         alert("Lỗi kết nối: " + err.message); 
@@ -142,11 +143,11 @@ async function handleRequestOtp(email) {
             lucide.createIcons();
             elements.btnAuthAction.disabled = false;
         } else if (res === "NotRegistered") {
-            alert("Gmail chưa đăng ký. Đại Ca sang tab Register nhé!");
-            resetAuthButton();
+            resetAuthButton(); // Reset nút trước
+            alert("Gmail chưa đăng ký. Đại Ca sang tab Register nhé!"); // Hiện alert sau
         } else { 
-            alert("Lỗi: " + res); 
             resetAuthButton();
+            alert("Lỗi: " + res); 
         }
     } catch (err) { 
         alert("Lỗi kết nối: " + err.message); 

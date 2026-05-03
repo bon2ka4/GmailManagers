@@ -564,14 +564,16 @@ window.openAdminPanel = async () => {
                 </tr>`;
             }).join('');
             if (window.lucide) lucide.createIcons();
+        } else {
+             elements.adminUserList.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-rose-500 font-bold">Lỗi: ${users}</td></tr>`;
         }
     } catch (e) {
-        elements.adminUserList.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-rose-500 font-bold">Lỗi tải dữ liệu từ Cloud!</td></tr>';
+        elements.adminUserList.innerHTML = '<tr><td colspan="4" class="text-center py-10 text-rose-500 font-bold">Lỗi kết nối Cloud!</td></tr>';
     }
 };
 
 window.adminDeleteUser = async (targetEmail) => {
-    if (!confirm(`Đại Ca có chắc chắn muốn XÓA VĨNH VIỄN người dùng ${targetEmail}?\nToàn bộ dữ liệu Gmail của người này cũng sẽ bị xóa sạch!`)) return;
+    if (!confirm(`Đại Ca có chắc chắn muốn XÓA VĨNH VIỄN ${targetEmail}?\nAction này không thể hoàn tác!`)) return;
     
     try {
         toggleLoading(true);
@@ -582,23 +584,27 @@ window.adminDeleteUser = async (targetEmail) => {
         });
         
         if (res === "Success") {
-            alert("Đã xong! Người dùng này đã 'bay màu' khỏi hệ thống.");
-            window.openAdminPanel(); // Refresh lại danh sách ngay lập tức
+            alert("Đã xóa vĩnh viễn người dùng này.");
+            window.openAdminPanel();
         } else {
-            alert("Lỗi: " + res);
+            alert("Lỗi từ Cloud: " + res);
         }
     } catch (e) {
-        alert("Lỗi kết nối khi xóa user!");
+        alert("Lỗi kết nối khi gửi lệnh xóa!");
     } finally {
         toggleLoading(false);
     }
 };
 
-elements.btnAdminPanel.addEventListener('click', window.openAdminPanel);
-elements.btnCloseAdmin.addEventListener('click', () => {
-    elements.adminModal.classList.add('pointer-events-none', 'opacity-0');
-    elements.adminModal.querySelector('.glass').classList.add('scale-95');
-});
+// Đảm bảo sự kiện đóng modal hoạt động chuẩn xác
+if (elements.btnCloseAdmin) {
+    elements.btnCloseAdmin.onclick = () => {
+        elements.adminModal.classList.add('pointer-events-none', 'opacity-0');
+        elements.adminModal.classList.remove('opacity-100');
+        elements.adminModal.querySelector('.glass').classList.add('scale-95');
+    };
+}
+if (elements.btnAdminPanel) elements.btnAdminPanel.onclick = window.openAdminPanel;
 
 const handleLogout = () => {
     sessionStorage.clear();

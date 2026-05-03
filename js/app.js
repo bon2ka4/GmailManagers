@@ -212,7 +212,11 @@ elements.forgotForm.addEventListener('submit', async (e) => {
 
 async function loadData() {
     if (!API_URL || !MASTER_KEY) return;
-    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5 animate-spin"></i> <span>Đang tải...</span>`;
+    
+    // Đang tải... (Bản Senior: Cố định độ rộng để không bị nhảy layout)
+    elements.btnSync.classList.add('min-w-[140px]');
+    elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin text-blue-400"></i> <span class="text-xs font-medium">Đang tải...</span>`;
+    lucide.createIcons();
     try {
         const response = await fetch(API_URL);
         const encryptedContent = await response.text();
@@ -222,8 +226,10 @@ async function loadData() {
             accounts = decrypted.accounts || [];
             cloudMetadata = decrypted.metadata || {};
         }
-        elements.btnSync.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i> <span>Đã đồng bộ</span>`;
-    } catch (err) { elements.btnSync.innerHTML = `<span>Lỗi Sync</span>`; }
+        elements.btnSync.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-500"></i> <span class="text-xs font-medium">Đã đồng bộ</span>`;
+    } catch (err) { 
+        elements.btnSync.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-500"></i> <span class="text-xs font-medium">Lỗi Sync</span>`; 
+    }
     lucide.createIcons();
     render();
 }

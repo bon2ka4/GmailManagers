@@ -137,8 +137,15 @@ async function handleRequestOtp(email) {
             elements.btnAuthAction.disabled = false;
         } else if (res === "NotRegistered") {
             alert("Gmail chưa đăng ký. Đại Ca sang tab Register nhé!");
-        } else { alert("Lỗi: " + res); }
-    } catch (err) { alert("Lỗi kết nối: " + err.message); }
+            elements.btnAuthAction.querySelector('span').innerText = "GỬI MÃ OTP";
+        } else { 
+            alert("Lỗi: " + res); 
+            elements.btnAuthAction.querySelector('span').innerText = "GỬI MÃ OTP";
+        }
+    } catch (err) { 
+        alert("Lỗi kết nối: " + err.message); 
+        elements.btnAuthAction.querySelector('span').innerText = "GỬI MÃ OTP";
+    }
     finally { if(!isOtpSent) elements.btnAuthAction.disabled = false; }
 }
 

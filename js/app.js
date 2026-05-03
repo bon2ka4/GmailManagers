@@ -118,11 +118,14 @@ async function handleRegister(email) {
             switchAuthMode("login");
         } else {
             alert("Lỗi: " + res);
+            resetAuthButton();
         }
-    } catch (err) { alert("Lỗi kết nối: " + err.message); }
+    } catch (err) { 
+        alert("Lỗi kết nối: " + err.message); 
+        resetAuthButton();
+    }
     finally { 
         elements.btnAuthAction.disabled = false;
-        elements.btnAuthAction.querySelector('span').innerText = "ĐĂNG KÝ NGAY";
     }
 }
 
@@ -135,20 +138,26 @@ async function handleRequestOtp(email) {
         if (res === "OTPSent") {
             isOtpSent = true;
             elements.otpSection.classList.remove('hidden');
-            elements.btnAuthAction.querySelector('span').innerText = "XÁC MINH & ĐĂNG NHẬP";
+            elements.btnAuthAction.innerHTML = `<span>XÁC MINH & ĐĂNG NHẬP</span> <i data-lucide="check-circle" class="w-5 h-5"></i>`;
+            lucide.createIcons();
             elements.btnAuthAction.disabled = false;
         } else if (res === "NotRegistered") {
             alert("Gmail chưa đăng ký. Đại Ca sang tab Register nhé!");
-            elements.btnAuthAction.querySelector('span').innerText = "GỬI MÃ OTP";
+            resetAuthButton();
         } else { 
             alert("Lỗi: " + res); 
-            elements.btnAuthAction.querySelector('span').innerText = "GỬI MÃ OTP";
+            resetAuthButton();
         }
     } catch (err) { 
         alert("Lỗi kết nối: " + err.message); 
-        elements.btnAuthAction.querySelector('span').innerText = "GỬI MÃ OTP";
+        resetAuthButton();
     }
     finally { if(!isOtpSent) elements.btnAuthAction.disabled = false; }
+}
+
+function resetAuthButton() {
+    elements.btnAuthAction.innerHTML = `<span>${authMode === "login" ? "GỬI MÃ OTP" : "ĐĂNG KÝ NGAY"}</span> <i data-lucide="arrow-right" class="w-5 h-5"></i>`;
+    lucide.createIcons();
 }
 
 async function handleVerifyLogin(email, otp) {

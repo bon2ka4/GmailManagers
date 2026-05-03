@@ -247,15 +247,19 @@ function render() {
     const term = elements.searchInput.value.toLowerCase();
     const filtered = accounts.filter(a => a.account.toLowerCase().includes(term) || a.password.toLowerCase().includes(term));
     elements.statTotal.innerText = accounts.length;
-    elements.statExpiring.innerText = accounts.filter(a => checkExpiring(a.expiry_date)).length;
+    elements.statExpiring.innerText = accounts.filter(a => isOverdue(a.expiry_date)).length;
 
     if (filtered.length === 0) {
         elements.accountList.innerHTML = '';
         elements.emptyState.classList.remove('hidden');
     } else {
         elements.emptyState.classList.add('hidden');
-        elements.accountList.innerHTML = filtered.map((acc, index) => `
-            <tr class="admin-row transition-all group border-b border-white/5 hover:bg-white/[0.02]">
+        elements.accountList.innerHTML = filtered.map((acc, index) => {
+            const isViolation = acc.burial_date && acc.expiry_date && acc.burial_date >= acc.expiry_date;
+            const overdue = isOverdue(acc.expiry_date);
+            
+            return `
+            <tr class="admin-row transition-all group border-b border-white/5 hover:bg-white/[0.02] ${isViolation ? 'bg-rose-500/10 border-l-2 border-l-rose-500' : ''}">
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2 group/item">
                         <div class="font-bold text-white">${acc.account}</div>
@@ -286,7 +290,7 @@ function render() {
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${checkExpiring(acc.expiry_date) ? 'bg-amber-500/10 text-amber-500' : (acc.expiry_date ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-400')}">
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-black ${overdue ? 'bg-rose-500/20 text-rose-500 border border-rose-500/50' : (acc.expiry_date ? 'bg-emerald-500/10 text-emerald-500' : 'bg-indigo-500/10 text-indigo-400')}">
                         ${acc.expiry_date ? formatDate(acc.expiry_date) : 'VĨNH VIỄN'}
                     </span>
                 </td>
@@ -302,16 +306,17 @@ function render() {
                     </div>
                 </td>
             </tr>
-        `).join('');
-        console.log("Dashboard Rendered with Reorder Buttons!");
+        `;
+        }).join('');
+        console.log("Dashboard Rendered with Violation Highlighting!");
         if (window.lucide) lucide.createIcons();
     }
 }
 
-function checkExpiring(date) {
+function isOverdue(date) {
     if (!date) return false;
-    const diff = (new Date(date) - new Date()) / (1000 * 60 * 60 * 24);
-    return diff >= 0 && diff < 7;
+    const today = new Date().toISOString().split('T')[0];
+    return date < today;
 }
 
 function formatDate(dateStr) {

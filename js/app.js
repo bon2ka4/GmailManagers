@@ -78,14 +78,18 @@ window.addEventListener('DOMContentLoaded', () => {
             if (decryptedUrl) {
                 API_URL = decryptedUrl;
                 MASTER_KEY = rememberedKey;
-                elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
-                elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+                elements.mainApp.classList.remove('hidden');
+                setTimeout(() => {
+                    elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+                }, 50);
                 loadData();
+                return;
             }
-        } catch (e) {
-            console.error("Auto login failed", e);
-        }
+        } catch (e) { console.error("Auto login failed", e); }
     }
+    
+    // Nếu không auto-login được thì hiện màn hình Login
+    elements.loginScreen.classList.remove('hidden');
 });
 
 // --- AUTH UTILS ---
@@ -150,7 +154,11 @@ elements.loginForm.addEventListener('submit', async (e) => {
             }
             
             elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
-            elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+            elements.mainApp.classList.remove('hidden');
+            setTimeout(() => {
+                elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+                elements.loginScreen.classList.add('hidden');
+            }, 500);
             loadData();
         } catch (err) {
             alert("Gmail hoặc Mật khẩu không đúng!");
@@ -160,8 +168,11 @@ elements.loginForm.addEventListener('submit', async (e) => {
 
 elements.btnConfirmRecovery.addEventListener('click', async () => {
     elements.recoveryModal.classList.remove('active-modal');
-    elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
-    elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+    elements.loginScreen.classList.add('opacity-0', 'pointer-events-none', 'hidden');
+    elements.mainApp.classList.remove('hidden');
+    setTimeout(() => {
+        elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+    }, 50);
     // Lưu bản ghi đầu tiên kèm metadata
     await saveData();
     loadData();

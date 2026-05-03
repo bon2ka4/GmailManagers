@@ -19,6 +19,7 @@ const elements = {
     firstTimeConfig: document.getElementById('first-time-config'),
     btnShowSetup: document.getElementById('btn-show-setup'),
     btnForgotPass: document.getElementById('btn-forgot-pass'),
+    rememberMe: document.getElementById('remember-me'),
     
     recoveryModal: document.getElementById('recovery-modal'),
     displayRecoveryToken: document.getElementById('display-recovery-token'),
@@ -64,6 +65,29 @@ elements.btnShowSetup.addEventListener('click', () => {
     elements.firstTimeConfig.classList.toggle('hidden');
 });
 
+// --- AUTO LOGIN CHECK ---
+window.addEventListener('DOMContentLoaded', () => {
+    const rememberedKey = localStorage.getItem('gmail_tool_remembered_key');
+    const rememberedEmail = localStorage.getItem('gmail_tool_remembered_email');
+    const encryptedUrl = localStorage.getItem('gmail_tool_api_url_encrypted');
+
+    if (rememberedKey && rememberedEmail && encryptedUrl) {
+        try {
+            const bytes = CryptoJS.AES.decrypt(encryptedUrl, rememberedKey);
+            const decryptedUrl = bytes.toString(CryptoJS.enc.Utf8);
+            if (decryptedUrl) {
+                API_URL = decryptedUrl;
+                MASTER_KEY = rememberedKey;
+                elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
+                elements.mainApp.classList.remove('blur-xl', 'opacity-0');
+                loadData();
+            }
+        } catch (e) {
+            console.error("Auto login failed", e);
+        }
+    }
+});
+
 // --- AUTH UTILS ---
 
 function deriveKey(email, pass) {
@@ -93,18 +117,20 @@ elements.loginForm.addEventListener('submit', async (e) => {
         API_URL = url;
         MASTER_KEY = key;
         
-        // Tạo Recovery Token
-        const token = generateRecoveryToken();
-        elements.displayRecoveryToken.innerText = token;
-        
         // Lưu config đã mã hóa vào local
         const encryptedUrlStore = CryptoJS.AES.encrypt(url, key).toString();
         localStorage.setItem('gmail_tool_api_url_encrypted', encryptedUrlStore);
+
+        if (elements.rememberMe.checked) {
+            localStorage.setItem('gmail_tool_remembered_key', key);
+            localStorage.setItem('gmail_tool_remembered_email', email);
+        }
         
-        // Hiển thị mã khôi phục cho user lưu
+        // Tạo Recovery Token
+        const token = generateRecoveryToken();
+        elements.displayRecoveryToken.innerText = token;
         elements.recoveryModal.classList.add('active-modal');
         
-        // Chuẩn bị metadata để lưu lên Cloud
         cloudMetadata = {
             recovery_check: CryptoJS.AES.encrypt("VALID", token).toString(),
             backup_key: CryptoJS.AES.encrypt(key, token).toString()
@@ -117,6 +143,11 @@ elements.loginForm.addEventListener('submit', async (e) => {
             if (!decryptedUrl) throw new Error();
             API_URL = decryptedUrl;
             MASTER_KEY = key;
+
+            if (elements.rememberMe.checked) {
+                localStorage.setItem('gmail_tool_remembered_key', key);
+                localStorage.setItem('gmail_tool_remembered_email', email);
+            }
             
             elements.loginScreen.classList.add('opacity-0', 'pointer-events-none');
             elements.mainApp.classList.remove('blur-xl', 'opacity-0');
@@ -332,7 +363,11 @@ elements.btnInfo.addEventListener('click', () => {
     elements.cloudInfo.classList.toggle('opacity-0');
     elements.cloudInfo.classList.toggle('pointer-events-none');
 });
-elements.btnLogout.addEventListener('click', () => location.reload());
+elements.btnLogout.addEventListener('click', () => {
+    localStorage.removeItem('gmail_tool_remembered_key');
+    localStorage.removeItem('gmail_tool_remembered_email');
+    location.reload();
+});
 
 lucide.createIcons();
 render();

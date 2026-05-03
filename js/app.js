@@ -91,7 +91,8 @@ function switchAuthMode(mode) {
 elements.authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = elements.authEmail.value.trim();
-    
+    if (!email) return;
+
     if (authMode === "register") {
         await handleRegister(email);
     } else {
@@ -103,19 +104,30 @@ elements.authForm.addEventListener('submit', async (e) => {
     }
 });
 
-async function handleRegister(email) {
-    elements.btnAuthAction.disabled = true;
-    elements.btnAuthAction.querySelector('span').innerText = "ĐANG ĐĂNG KÝ...";
+function setAuthBtnState(text, isLoading = false, iconName = "arrow-right") {
+    const span = elements.btnAuthAction.querySelector('span');
+    const iconContainer = elements.btnAuthAction.querySelector('i') || elements.btnAuthAction.querySelector('.lucide');
     
+    if (span) span.innerText = text;
+    elements.btnAuthAction.disabled = isLoading;
+    
+    if (iconName && elements.btnAuthAction) {
+        // Cập nhật icon mà không phá cấu trúc
+        elements.btnAuthAction.innerHTML = `<span>${text}</span> <i data-lucide="${iconName}" class="w-5 h-5 ${isLoading ? 'animate-spin' : ''}"></i>`;
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+async function handleRegister(email) {
+    setAuthBtnState("ĐANG ĐĂNG KÝ...", true, "refresh-cw");
     try {
         const res = await callCloud({ action: 'register', email });
         if (res === "Success") {
-            // Đăng ký xong thì tự động yêu cầu OTP luôn cho mượt
-            authMode = "login"; // Chuyển ngầm sang login để handleRequestOtp hoạt động đúng
+            authMode = "login"; 
             await handleRequestOtp(email);
         } else if (res === "AlreadyRegistered") {
             resetAuthButton();
-            alert("Gmail này đã đăng ký rồi Đại Ca ơi! Hãy quay lại tab Login.");
+            alert("Gmail này đã đăng ký rồi Đại Ca ơi!");
             switchAuthMode("login");
         } else {
             resetAuthButton();
@@ -125,26 +137,19 @@ async function handleRegister(email) {
         alert("Lỗi kết nối: " + err.message); 
         resetAuthButton();
     }
-    finally { 
-        elements.btnAuthAction.disabled = false;
-    }
 }
 
 async function handleRequestOtp(email) {
-    elements.btnAuthAction.disabled = true;
-    elements.btnAuthAction.querySelector('span').innerText = "ĐANG GỬI OTP...";
-    
+    setAuthBtnState("ĐANG GỬI OTP...", true, "refresh-cw");
     try {
         const res = await callCloud({ action: 'request_otp', email });
         if (res === "OTPSent") {
             isOtpSent = true;
             elements.otpSection.classList.remove('hidden');
-            elements.btnAuthAction.innerHTML = `<span>XÁC MINH & ĐĂNG NHẬP</span> <i data-lucide="check-circle" class="w-5 h-5"></i>`;
-            lucide.createIcons();
-            elements.btnAuthAction.disabled = false;
+            setAuthBtnState("XÁC MINH & ĐĂNG NHẬP", false, "check-circle");
         } else if (res === "NotRegistered") {
-            resetAuthButton(); // Reset nút trước
-            alert("Gmail chưa đăng ký. Đại Ca sang tab Register nhé!"); // Hiện alert sau
+            resetAuthButton();
+            alert("Gmail chưa đăng ký. Đại Ca sang tab Register nhé!");
         } else { 
             resetAuthButton();
             alert("Lỗi: " + res); 
@@ -153,18 +158,15 @@ async function handleRequestOtp(email) {
         alert("Lỗi kết nối: " + err.message); 
         resetAuthButton();
     }
-    finally { if(!isOtpSent) elements.btnAuthAction.disabled = false; }
 }
 
 function resetAuthButton() {
-    elements.btnAuthAction.innerHTML = `<span>${authMode === "login" ? "GỬI MÃ OTP" : "ĐĂNG KÝ NGAY"}</span> <i data-lucide="arrow-right" class="w-5 h-5"></i>`;
-    lucide.createIcons();
+    setAuthBtnState(authMode === "login" ? "GỬI MÃ OTP" : "ĐĂNG KÝ NGAY", false, "arrow-right");
 }
 
 async function handleVerifyLogin(email, otp) {
     if (!otp) return alert("Vui lòng nhập mã OTP!");
-    elements.btnAuthAction.disabled = true;
-    elements.btnAuthAction.querySelector('span').innerText = "ĐANG XÁC MINH...";
+    setAuthBtnState("ĐANG XÁC MINH...", true, "refresh-cw");
 
     try {
         const res = await callCloud({ action: 'login', email, otp });
@@ -172,27 +174,27 @@ async function handleVerifyLogin(email, otp) {
             CURRENT_USER = email;
             IS_ADMIN = res.isAdmin;
             
-            // Luôn lưu vào Session để Sync hoạt động trong phiên này
             sessionStorage.setItem('gmail_tool_user', email);
             sessionStorage.setItem('gmail_tool_otp', otp);
             sessionStorage.setItem('gmail_tool_session_active', 'true');
             sessionStorage.setItem('gmail_tool_is_admin', IS_ADMIN);
 
-            // Chỉ lưu vào Local nếu chọn Ghi nhớ (để tự điền email lần sau)
             if (elements.rememberMe.checked) {
                 localStorage.setItem('gmail_tool_user', email);
             }
-            
-            // Cập nhật cache dữ liệu mới nhất
             localStorage.setItem('gmail_tool_last_data_' + email, res.data || "[]");
             
             accounts = res.data ? JSON.parse(res.data) : [];
             enterApp();
         } else {
             alert("Mã OTP không đúng hoặc đã hết hạn!");
+            resetAuthButton(); // Trả về trạng thái Xác minh để nhập lại
+            setAuthBtnState("XÁC MINH & ĐĂNG NHẬP", false, "check-circle");
         }
-    } catch (err) { alert("Lỗi xác minh: " + err.message); }
-    finally { elements.btnAuthAction.disabled = false; }
+    } catch (err) { 
+        alert("Lỗi xác minh: " + err.message); 
+        resetAuthButton();
+    }
 }
 
 function enterApp() {

@@ -1,5 +1,5 @@
 /**
- * GMAIL MANAGER - CLOUD VERSION LOGIC
+ * GMAIL MANAGER - CLOUD VERSION LOGIC (ADJUSTED)
  * Author: Antigravity (Senior AI Developer)
  */
 
@@ -21,6 +21,7 @@ const elements = {
     form: document.getElementById('account-form'),
     btnCloseModal: document.getElementById('btn-close-modal'),
     btnCancel: document.getElementById('btn-cancel'),
+    btnDelete: document.getElementById('btn-delete-account'),
     statTotal: document.getElementById('stat-total'),
     statExpiring: document.getElementById('stat-expiring'),
     statStorage: document.getElementById('stat-storage'),
@@ -31,11 +32,10 @@ const elements = {
 
 // --- STORAGE LOGIC (CLOUD) ---
 
-// Load API URL từ localStorage nếu có
 const savedApiUrl = localStorage.getItem('gmail_tool_api_url');
 if (savedApiUrl) {
     elements.apiUrlInput.value = savedApiUrl;
-    loadData(); // Tự động load nếu có URL
+    loadData();
 }
 
 async function loadData() {
@@ -56,39 +56,23 @@ async function loadData() {
         } else {
             accounts = [];
         }
-        
         elements.btnSync.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i> <span>Đã đồng bộ</span>`;
     } catch (err) {
         console.error("Cloud load failed:", err);
-        alert("Lỗi kết nối Cloud. Vui lòng kiểm tra lại API URL.");
-        elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5"></i> <span>Thử lại</span>`;
+        elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5"></i> <span>Lỗi Sync</span>`;
     }
-    
     lucide.createIcons();
     render();
 }
 
 async function saveData() {
     const apiUrl = elements.apiUrlInput.value.trim();
-    if (!apiUrl) {
-        alert("Vui lòng nhập API URL để lưu dữ liệu lên Cloud!");
-        return;
-    }
-
+    if (!apiUrl) return;
     const dataString = JSON.stringify(accounts);
     const encryptedData = CryptoJS.AES.encrypt(dataString, SECRET_KEY).toString();
-
     try {
-        await fetch(apiUrl, {
-            method: 'POST',
-            mode: 'no-cors', // Google Apps Script yêu cầu no-cors hoặc xử lý OPTIONS phức tạp
-            body: encryptedData
-        });
-        // Note: no-cors sẽ không trả về response body, nhưng data vẫn được gửi đi.
-        console.log("Data sent to Cloud");
-    } catch (err) {
-        console.error("Cloud save failed:", err);
-    }
+        await fetch(apiUrl, { method: 'POST', mode: 'no-cors', body: encryptedData });
+    } catch (err) { console.error("Cloud save failed:", err); }
 }
 
 // --- UI LOGIC ---
@@ -101,7 +85,6 @@ function render() {
         const matchesSearch = acc.account.toLowerCase().includes(searchTerm) || 
                               acc.phone?.includes(searchTerm) || 
                               acc.password.toLowerCase().includes(searchTerm);
-        
         if (filter === 'all') return matchesSearch;
         const isExpiring = checkExpiring(acc.expiry_date);
         if (filter === 'warning') return matchesSearch && isExpiring;
@@ -113,14 +96,10 @@ function render() {
     const expiringCount = accounts.filter(acc => checkExpiring(acc.expiry_date)).length;
     elements.statExpiring.innerText = expiringCount;
     
-    let totalStorage = 0, usedStorage = 0;
-    accounts.forEach(acc => {
-        totalStorage += parseFloat(acc.storage_total || 15);
-        usedStorage += parseFloat(acc.storage_used || 0);
-    });
-    const storagePercent = totalStorage > 0 ? Math.round((usedStorage / totalStorage) * 100) : 0;
-    elements.statStorage.innerText = `${storagePercent}%`;
-    elements.statStorageBar.style.width = `${storagePercent}%`;
+    // Dung lượng chỉ tính dựa trên số lượng gói
+    let totalStorageCount = accounts.reduce((sum, acc) => sum + parseFloat(acc.storage_total || 0), 0);
+    elements.statStorage.innerText = `${totalStorageCount} GB`;
+    elements.statStorageBar.style.width = `100%`;
 
     if (filtered.length === 0) {
         elements.accountList.innerHTML = '';
@@ -128,40 +107,32 @@ function render() {
     } else {
         elements.emptyState.classList.add('hidden');
         elements.accountList.innerHTML = filtered.map(acc => `
-            <tr class="hover:bg-white/5 transition-colors group">
+            <tr class="hover:bg-white/5 transition-colors cursor-pointer group" onclick="window.editAccount('${acc.id}')">
                 <td class="px-6 py-4">
                     <div class="flex flex-col">
                         <span class="font-semibold text-white">${acc.account}</span>
-                        <div class="flex items-center gap-2 text-xs text-slate-500 relative">
-                            <span>Pass: ••••••••</span>
-                            <button onclick="window.copyToClipboard('${acc.password}', this)" class="hover:text-blue-400"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                        <div class="flex items-center gap-2 text-xs text-blue-400 mt-1 relative" onclick="event.stopPropagation()">
+                            <span class="bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">${acc.password}</span>
+                            <button onclick="window.copyToClipboard('${acc.password}', this)" class="hover:text-white"><i data-lucide="copy" class="w-3 h-3"></i></button>
                         </div>
                     </div>
                 </td>
                 <td class="px-6 py-4 text-sm">
                     <div class="text-slate-300">${acc.phone || 'N/A'}</div>
-                    <div class="text-xs text-slate-500">${acc.recovery_email || ''}</div>
+                    <div class="text-[10px] text-slate-500 mt-1">${acc.recovery_email || ''}</div>
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
-                        <div class="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden border border-white/5">
-                            <div class="h-full bg-blue-500" style="width: ${(acc.storage_used/acc.storage_total)*100}%"></div>
-                        </div>
-                        <span class="text-xs text-slate-400">${acc.storage_used}/${acc.storage_total}GB</span>
-                    </div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="flex flex-col gap-1">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-medium ${checkExpiring(acc.expiry_date) ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'} w-fit">
-                            Exp: ${acc.expiry_date || 'N/A'}
-                        </span>
-                        <span class="text-[10px] text-slate-500 ml-1">Tạo: ${acc.create_date || 'N/A'}</span>
+                        <div class="p-1.5 bg-purple-500/10 rounded-lg"><i data-lucide="cloud" class="w-3.5 h-3.5 text-purple-400"></i></div>
+                        <span class="text-sm font-medium text-slate-300">${acc.storage_total || 15} GB</span>
                     </div>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="window.editAccount('${acc.id}')" class="p-2 hover:bg-blue-600/20 hover:text-blue-400 rounded-lg transition-all"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                        <button onclick="window.deleteAccount('${acc.id}')" class="p-2 hover:bg-red-600/20 hover:text-red-400 rounded-lg transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <div class="flex flex-col items-end gap-1">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${checkExpiring(acc.expiry_date) ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'} w-fit">
+                            HẾT HẠN: ${acc.expiry_date ? acc.expiry_date : 'VĨNH VIỄN'}
+                        </span>
+                        <span class="text-[10px] text-slate-500">Chôn: ${acc.create_date || 'N/A'}</span>
                     </div>
                 </td>
             </tr>
@@ -194,18 +165,11 @@ window.editAccount = (id) => {
     if (!acc) return;
     editingId = id;
     elements.modalTitle.innerText = "Chỉnh sửa tài khoản";
+    elements.btnDelete.classList.remove('hidden');
     for (let key in acc) {
         if (elements.form[key]) elements.form[key].value = acc[key];
     }
     elements.modal.classList.add('active');
-};
-
-window.deleteAccount = async (id) => {
-    if (confirm('Xóa tài khoản này?')) {
-        accounts = accounts.filter(a => a.id !== id);
-        await saveData();
-        render();
-    }
 };
 
 // --- EVENTS ---
@@ -215,12 +179,23 @@ elements.btnSync.addEventListener('click', loadData);
 elements.btnAdd.addEventListener('click', () => {
     editingId = null;
     elements.modalTitle.innerText = "Thêm tài khoản mới";
+    elements.btnDelete.classList.add('hidden');
     elements.form.reset();
     elements.modal.classList.add('active');
 });
 
 elements.btnCloseModal.addEventListener('click', () => elements.modal.classList.remove('active'));
 elements.btnCancel.addEventListener('click', () => elements.modal.classList.remove('active'));
+
+elements.btnDelete.addEventListener('click', async () => {
+    if (editingId && confirm('Đại Ca có chắc muốn XÓA vĩnh viễn tài khoản này?')) {
+        accounts = accounts.filter(a => a.id !== editingId);
+        await saveData();
+        elements.modal.classList.remove('active');
+        render();
+        setTimeout(loadData, 1000);
+    }
+});
 
 elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -238,7 +213,6 @@ elements.form.addEventListener('submit', async (e) => {
     await saveData();
     elements.modal.classList.remove('active');
     render();
-    // Re-load để đảm bảo sync thành công
     setTimeout(loadData, 1000);
 });
 

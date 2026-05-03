@@ -96,11 +96,10 @@
                 <table class="w-full text-left">
                     <thead class="bg-white/5 text-slate-400 uppercase text-xs font-semibold tracking-wider">
                         <tr>
-                            <th class="px-6 py-4">Tài khoản</th>
+                            <th class="px-6 py-4">Tài khoản & Mật khẩu</th>
                             <th class="px-6 py-4">SĐT / Phục hồi</th>
-                            <th class="px-6 py-4">Dung lượng</th>
-                            <th class="px-6 py-4">Ngày hết hạn</th>
-                            <th class="px-6 py-4 text-right">Hành động</th>
+                            <th class="px-6 py-4">Gói Google One</th>
+                            <th class="px-6 py-4 text-right">Ngày chôn / Hết hạn</th>
                         </tr>
                     </thead>
                     <tbody id="account-list" class="divide-y divide-white/5">
@@ -151,12 +150,8 @@
                     <input type="email" name="auth_email" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
                 </div>
                 <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-400">Dung lượng gói (GB)</label>
+                    <label class="text-sm font-semibold text-slate-400">Gói Google One (GB)</label>
                     <input type="number" name="storage_total" value="15" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
-                </div>
-                <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-400">Dung lượng đã dùng (GB)</label>
-                    <input type="number" step="0.1" name="storage_used" value="0" class="w-full bg-slate-900 border border-white/10 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-600 transition-all">
                 </div>
                 <div class="space-y-2">
                     <label class="text-sm font-semibold text-slate-400">Ngày chôn (Ngày tạo)</label>
@@ -168,6 +163,7 @@
                 </div>
                 <div class="md:col-span-2 pt-4 flex gap-4">
                     <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-600/20">Lưu lại</button>
+                    <button type="button" id="btn-delete-account" class="px-6 bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white py-3 rounded-xl font-bold transition-all border border-red-600/20 hidden">Xóa</button>
                     <button type="button" id="btn-cancel" class="px-8 bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-bold transition-all">Hủy</button>
                 </div>
             </form>

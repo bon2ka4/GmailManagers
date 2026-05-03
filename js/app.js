@@ -154,9 +154,9 @@ async function handleVerifyLogin(email, otp) {
             
             if (elements.rememberMe.checked) {
                 sessionStorage.setItem('gmail_tool_user', email);
+                sessionStorage.setItem('gmail_tool_otp', otp); // Lưu lại mã để Sync
                 sessionStorage.setItem('gmail_tool_session_active', 'true');
                 sessionStorage.setItem('gmail_tool_is_admin', IS_ADMIN);
-                // Lưu cache data vào localStorage (để load nhanh khi F5)
                 localStorage.setItem('gmail_tool_last_data_' + email, res.data || "[]");
             }
             
@@ -196,16 +196,19 @@ async function loadData() {
     elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> <span>ĐANG ĐỒNG BỘ...</span>`;
     lucide.createIcons();
     try {
-        const res = await callCloud({ action: 'login', email: CURRENT_USER, otp: 'SESSION' });
+        const storedOtp = sessionStorage.getItem('gmail_tool_otp') || "EXPIRED";
+        const res = await callCloud({ action: 'login', email: CURRENT_USER, otp: storedOtp });
+        
         if (res.status === "Success") {
             accounts = res.data ? JSON.parse(res.data) : [];
             localStorage.setItem('gmail_tool_last_data_' + CURRENT_USER, JSON.stringify(accounts));
             render();
-            
-            // Hiện trạng thái thành công trên nút
             elements.btnSync.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> <span class="text-emerald-400">ĐÃ ĐỒNG BỘ</span>`;
-            lucide.createIcons();
+        } else {
+            // Nếu OTP hết hạn (sau 5p), bắt người dùng login lại để lấy mã mới
+            elements.btnSync.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 text-rose-500"></i> <span class="text-rose-500 text-[10px]">HẾT HẠN - LOGOUT LẠI</span>`;
         }
+        lucide.createIcons();
     } catch (e) { 
         elements.btnSync.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-500"></i> <span>LỖI SYNC</span>`;
         lucide.createIcons();
@@ -361,6 +364,7 @@ elements.btnSync.addEventListener('click', loadData);
 elements.searchInput.addEventListener('input', render);
 
 elements.btnLogout.addEventListener('click', () => {
+    sessionStorage.clear();
     localStorage.removeItem('gmail_tool_user');
     location.reload();
 });

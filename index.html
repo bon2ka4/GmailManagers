@@ -264,6 +264,15 @@
         </div>
     </div>
 
+    <!-- GLOBAL LOADING OVERLAY -->
+    <div id="global-loading" class="hidden fixed inset-0 z-[1000] flex items-center justify-center">
+        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-md"></div>
+        <div class="relative flex flex-col items-center gap-4">
+            <div class="w-16 h-16 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin"></div>
+            <p class="text-white font-black tracking-widest text-xs uppercase animate-pulse">Đang xử lý...</p>
+        </div>
+    </div>
+
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -38,10 +38,18 @@ const elements = {
 
     setupModal: document.getElementById('setup-modal'),
     setupApiUrl: document.getElementById('setup-api-url'),
-    btnSaveSetup: document.getElementById('btn-save-setup')
+    btnSaveSetup: document.getElementById('btn-save-setup'),
+    globalLoading: document.getElementById('global-loading')
 };
 
+function toggleLoading(show) {
+    if (!elements.globalLoading) return;
+    if (show) elements.globalLoading.classList.remove('hidden');
+    else elements.globalLoading.classList.add('hidden');
+}
+
 let API_URL = localStorage.getItem('gmail_tool_api_url') || "";
+
 let CURRENT_USER = localStorage.getItem('gmail_tool_user') || "";
 let IS_ADMIN = false;
 let accounts = [];
@@ -129,7 +137,7 @@ async function handleRegister(email) {
 }
 
 async function handleRequestOtp(email) {
-    setAuthBtnState("ĐANG GỬI OTP...", true, "refresh-cw");
+    toggleLoading(true);
     try {
         const res = await callCloud({ action: 'request_otp', email });
         if (res === "OTPSent") {
@@ -146,6 +154,8 @@ async function handleRequestOtp(email) {
     } catch (err) { 
         alert("Lỗi kết nối: " + err.message); 
         resetAuthButton();
+    } finally {
+        toggleLoading(false);
     }
 }
 
@@ -155,7 +165,7 @@ function resetAuthButton() {
 
 async function handleVerifyLogin(email, otp) {
     if (!otp) return alert("Vui lòng nhập mã OTP!");
-    setAuthBtnState("ĐANG XÁC MINH...", true, "refresh-cw");
+    toggleLoading(true);
 
     try {
         const res = await callCloud({ action: 'login', email, otp });
@@ -179,6 +189,8 @@ async function handleVerifyLogin(email, otp) {
     } catch (err) { 
         alert("Lỗi xác minh: " + err.message); 
         resetAuthButton();
+    } finally {
+        toggleLoading(false);
     }
 }
 
@@ -362,30 +374,22 @@ elements.btnCancel.addEventListener('click', () => elements.modal.classList.remo
 
 elements.form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const btnSubmit = elements.form.querySelector('button[type="submit"]');
-    if (btnSubmit) {
-        const originalContent = btnSubmit.innerHTML;
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> <span>ĐANG LƯU...</span>`;
-        if (window.lucide) lucide.createIcons();
-        try {
-            const data = Object.fromEntries(new FormData(elements.form).entries());
-            if (editingId) {
-                const idx = accounts.findIndex(a => a.id === editingId);
-                accounts[idx] = { ...accounts[idx], ...data };
-            } else {
-                data.id = Date.now().toString();
-                accounts.push(data);
-            }
-            await saveData();
-            elements.modal.classList.remove('active-modal');
-            render();
-        } catch (err) { alert("Lỗi lưu!"); }
-        finally {
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = originalContent;
-            if (window.lucide) lucide.createIcons();
+    toggleLoading(true);
+    try {
+        const data = Object.fromEntries(new FormData(elements.form).entries());
+        if (editingId) {
+            const idx = accounts.findIndex(a => a.id === editingId);
+            accounts[idx] = { ...accounts[idx], ...data };
+        } else {
+            data.id = Date.now().toString();
+            accounts.push(data);
         }
+        await saveData();
+        elements.modal.classList.remove('active-modal');
+        render();
+    } catch (err) { alert("Lỗi lưu!"); }
+    finally {
+        toggleLoading(false);
     }
 });
 
@@ -393,10 +397,7 @@ window.deleteAccount = async (id) => {
     const acc = accounts.find(a => a.id === id);
     if (!acc) return;
     if (confirm(`Xóa Gmail: ${acc.account}?`)) {
-        elements.btnDelete.disabled = true;
-        const orig = elements.btnDelete.innerHTML;
-        elements.btnDelete.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>`;
-        if (window.lucide) lucide.createIcons();
+        toggleLoading(true);
         try {
             accounts = accounts.filter(a => a.id !== id);
             await saveData();
@@ -404,9 +405,7 @@ window.deleteAccount = async (id) => {
             render();
         } catch (err) { alert("Lỗi!"); }
         finally {
-            elements.btnDelete.disabled = false;
-            elements.btnDelete.innerHTML = orig;
-            if (window.lucide) lucide.createIcons();
+            toggleLoading(false);
         }
     }
 };

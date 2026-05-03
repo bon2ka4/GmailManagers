@@ -18,6 +18,7 @@ const elements = {
     btnSync: document.getElementById('btn-sync'),
     btnLogout: document.getElementById('btn-logout'),
     syncScreen: document.getElementById('sync-screen'),
+    btnSyncLogout: document.getElementById('btn-sync-logout'),
 
     statTotal: document.getElementById('stat-total'),
     statExpiring: document.getElementById('stat-expiring'),
@@ -243,7 +244,10 @@ async function loadData() {
             elements.mainApp.classList.remove('hidden');
             render();
         }
-    } catch (e) { alert("Lỗi đồng bộ dữ liệu!"); }
+    } catch (e) { 
+        alert("Lỗi đồng bộ dữ liệu! Vui lòng kiểm tra lại Cloud URL hoặc kết nối mạng.");
+        if (elements.btnSyncLogout) elements.btnSyncLogout.classList.remove('hidden');
+    }
 }
 
 async function saveData() {
@@ -525,11 +529,15 @@ window.deleteAccount = async (id) => {
     }
 };
 
-elements.btnLogout.addEventListener('click', () => {
+const handleLogout = () => {
     sessionStorage.clear();
     localStorage.removeItem('gmail_tool_user');
+    localStorage.removeItem('gmail_tool_session_active');
     window.location.href = window.location.origin + window.location.pathname;
-});
+};
+
+elements.btnLogout.addEventListener('click', handleLogout);
+if(elements.btnSyncLogout) elements.btnSyncLogout.addEventListener('click', handleLogout);
 
 // --- CLOUD SETUP ---
 elements.btnSaveSetup.addEventListener('click', () => {

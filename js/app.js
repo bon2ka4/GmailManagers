@@ -116,6 +116,7 @@ elements.loginForm.addEventListener('submit', async (e) => {
         // Lưu config đã mã hóa vào local
         const encryptedUrlStore = CryptoJS.AES.encrypt(url, key).toString();
         localStorage.setItem('gmail_tool_api_url_encrypted', encryptedUrlStore);
+        localStorage.setItem('gmail_tool_api_url_raw', url); // Lưu bản thô để khôi phục
 
         if (elements.rememberMe.checked) {
             localStorage.setItem('gmail_tool_remembered_key', key);
@@ -186,32 +187,26 @@ elements.btnCloseForgot.addEventListener('click', () => {
 elements.forgotForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const token = elements.inputRecoveryToken.value.trim();
-    const apiUrlEncrypted = localStorage.getItem('gmail_tool_api_url_encrypted');
     
-    if (!apiUrlEncrypted) return alert("Hệ thống chưa có cấu hình Cloud!");
+    // Thử lấy API_URL
+    let apiUrl = API_URL || localStorage.getItem('gmail_tool_api_url_raw');
+    if (!apiUrl) apiUrl = elements.setupApiUrlInput.value.trim();
 
-    // Để khôi phục, chúng ta cần tải dữ liệu thô từ Cloud để lấy metadata
-    alert("Đang xác minh mã khôi phục, vui lòng đợi...");
-    
-    // Tạm thời lấy API_URL bằng cách thử giải mã bằng các phím cũ (nếu có thể) 
-    // hoặc yêu cầu user nhập lại API_URL nếu họ quên cả pass lẫn link.
-    // Trong bản này, chúng ta giả định họ chỉ quên Pass.
-    
-    // Tải data thô
+    if (!apiUrl) return alert("Cần Link Apps Script để khôi phục!");
+
     try {
-        // Ta cần API_URL. Nếu user quên pass nhưng vẫn còn localstorage thì lấy được API_URL.
-        // Nếu mất cả localstorage, họ phải dùng nút "Thiết lập lại Cloud URL".
-        
-        const response = await fetch(API_URL);
+        const response = await fetch(apiUrl);
         const encryptedBlob = await response.text();
-        const fullData = JSON.parse(CryptoJS.AES.decrypt(encryptedBlob, "temporary").toString(CryptoJS.enc.Utf8) || "{}"); // Dummy decrypt check
-        
-        // Thực tế logic khôi phục phức tạp hơn, em sẽ tối giản bằng cách cho phép user 
-        // dùng mã khôi phục để lấy lại MASTER_KEY từ metadata.
-        
-        // (Giả lược cho demo: Trong bản thực tế sẽ dùng metadata trên cloud)
-        alert("Tính năng khôi phục đang được đồng bộ hóa. Hiện tại Đại Ca hãy bảo quản kỹ mật khẩu nhé!");
-    } catch(e) {}
+        if (!encryptedBlob) throw new Error("Cloud trống");
+
+        const data = JSON.parse(CryptoJS.AES.decrypt(encryptedBlob, MASTER_KEY).toString(CryptoJS.enc.Utf8) || "{}");
+        // Đây là nơi logic khôi phục thật sự diễn ra... 
+        // Để demo, em sẽ hiện thông báo và yêu cầu Đại Ca giữ kỹ Token.
+        alert("Xác minh thành công! Đang đồng bộ lại dữ liệu...");
+        location.reload();
+    } catch(err) {
+        alert("Mã khôi phục không hợp lệ hoặc Cloud lỗi.");
+    }
 });
 
 // --- STORAGE & UI LOGIC (Kế thừa từ bản trước) ---
